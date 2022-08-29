@@ -56,5 +56,5 @@ iptables -t mangle -P POSTROUTING ACCEPT
 iptables -A PREROUTING -t mangle -i lo -j ACCEPT # Accept local traffic
 iptables -A PREROUTING -t mangle -p tcp	-m state --state ESTABLISHED,RELATED -j ACCEPT # Accept established connections
 iptables -A PREROUTING -t mangle -s $controller_ip -j ACCEPT # Accept controller traffic
-iptables -A PREROUTING -t mangle -p tcp --dport 22 # Accept attackers connections
+iptables -A PREROUTING -t mangle -p tcp --dport 22 -j ACCEPT # Accept attackers connections
 iptables -t mangle -P PREROUTING DROP # Drop everything else
