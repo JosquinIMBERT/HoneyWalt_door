@@ -12,6 +12,9 @@ class DoorController(Controller):
 	def __del__(self):
 		del self.socket
 
+	def connect(self):
+		self.socket.connect()
+
 	def run(self):
 		self.keep_running = True
 		while self.keep_running:
