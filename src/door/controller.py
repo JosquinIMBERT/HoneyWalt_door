@@ -25,7 +25,8 @@ class DoorController(Controller):
 
 	def execute(self, cmd):
 		if cmd == CMD_DOOR_FIREWALL_UP:
-			self.exec(glob.SERVER.FIREWALL.up)
+			ip = str(self.socket.recv_obj())
+			self.exec(glob.SERVER.FIREWALL.up, ip)
 		elif cmd == CMD_DOOR_FIREWALL_DOWN:
 			self.exec(glob.SERVER.FIREWALL.down)
 		elif cmd == CMD_DOOR_WG_KEYGEN:

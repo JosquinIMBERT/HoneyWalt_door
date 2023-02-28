@@ -8,8 +8,8 @@ class Firewall:
 	def __init__(self):
 		pass
 
-	def up(self):
-		run(to_root_path("src/script/firewall-up.sh")+" "+glob.CONTROLLER_IP)
+	def up(self, ip):
+		run(to_root_path("src/script/firewall-up.sh")+" "+ip)
 		return {"success": True}
 
 	def down(self):
