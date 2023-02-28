@@ -30,6 +30,7 @@ class DoorServer:
 		self.FIREWALL.down()
 
 	def start(self):
+		self.DOOR_CONTROLLER.connect()
 		self.DOOR_CONTROLLER.run()
 
 if __name__ == '__main__':
