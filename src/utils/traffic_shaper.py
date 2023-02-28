@@ -1,4 +1,8 @@
+# External
 import select, socket, threading
+
+# Internal
+import glob
 
 def encode_len(bytes_obj):
 	return len(bytes_obj).to_bytes(2, "big")
@@ -18,6 +22,8 @@ class TrafficShaper:
 		self.tcp_port=glob.TRAFFIC_PORT
 		self.listen_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.listen_sock.bind((self.tcp_host, self.tcp_port))
+		self.tcp_sock = None
+		self.udp_sock = None
 
 	def __del__(self):
 		if self.tcp_sock is not None:
