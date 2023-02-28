@@ -84,8 +84,8 @@ class Wireguard:
 
 		self.privkey, self.pubkey = Key.key_pair()
 
-		res["answer"]["privkey"] = self.privkey
-		res["answer"]["pubkey"]  = self.pubkey
+		res["answer"]["privkey"] = str(self.privkey)
+		res["answer"]["pubkey"]  = str(self.pubkey)
 
 		return res
 
