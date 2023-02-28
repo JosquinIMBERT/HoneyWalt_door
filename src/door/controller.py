@@ -3,6 +3,7 @@ from door.proto import *
 from door.sock import *
 import glob
 from utils.controller import Controller
+from utils.logs import *
 
 class DoorController(Controller):
 	def __init__(self):
@@ -19,30 +20,45 @@ class DoorController(Controller):
 		self.keep_running = True
 		while self.keep_running:
 			if self.socket.accept():
-				while self.keep_running:
+				disconnected = False
+				while self.keep_running and not disconnected:
 					cmd = self.socket.recv_cmd()
-					self.execute(cmd)
+					if not cmd:
+						disconnected = True
+					else:
+						self.execute(cmd)
+				log(INFO, "DoorController.run: Client disconnected")
 
 	def execute(self, cmd):
 		if cmd == CMD_DOOR_FIREWALL_UP:
+			log(INFO, "DoorController.execute: setting firewall up")
 			self.exec(glob.SERVER.FIREWALL.up, self.socket.addr[0])
 		elif cmd == CMD_DOOR_FIREWALL_DOWN:
+			log(INFO, "DoorController.execute: setting firewall down")
 			self.exec(glob.SERVER.FIREWALL.down)
 		elif cmd == CMD_DOOR_WG_KEYGEN:
+			log(INFO, "DoorController.execute: generating wireguard keys")
 			self.exec(glob.SERVER.WIREGUARD.keygen)
 		elif cmd == CMD_DOOR_WG_UP:
+			log(INFO, "DoorController.execute: setting wireguard up")
 			self.exec(glob.SERVER.WIREGUARD.up)
 		elif cmd == CMD_DOOR_WG_DOWN:
+			log(INFO, "DoorController.execute: setting wireguard down")
 			self.exec(glob.SERVER.WIREGUARD.down)
 		elif cmd == CMD_DOOR_WG_ADD_PEER:
+			log(INFO, "DoorController.execute: adding wireguard peer")
 			args = self.socket.recv_obj()
 			self.exec(glob.SERVER.WIREGUARD.add_peer, args["pubkey"], args["id"])
 		elif cmd == CMD_DOOR_TRAFFIC_SHAPER_UP:
+			log(INFO, "DoorController.execute: setting traffic shaper up")
 			self.exec(glob.SERVER.TRAFFIC_SHAPER.up)
 		elif cmd == CMD_DOOR_TRAFFIC_SHAPER_DOWN:
+			log(INFO, "DoorController.execute: setting traffic shaper down")
 			self.exec(glob.SERVER.TRAFFIC_SHAPER.down)
 		elif cmd == CMD_DOOR_LIVE:
+			log(INFO, "DoorController.execute: answering LIVE query")
 			self.socket.send_obj({"success": True})
 		else:
+			log(WARNING, "DoorController.execute: received invalid command")
 			res = {"success": False, "error": ["unknown command"]}
 			self.socket.send_obj(res)

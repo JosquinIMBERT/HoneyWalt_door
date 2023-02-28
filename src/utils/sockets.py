@@ -49,7 +49,11 @@ class ProtoSocket:
 			log(ERROR, self.name()+".recv_cmd: Failed to send a command. The socket is not connected")
 			return None
 		else:
-			return bytes_to_cmd(self.socket.recv(COMMAND_SIZE))
+			bytes_cmd = self.recv(size=COMMAND_SIZE)
+			if bytes_cmd:
+				return bytes_to_cmd(bytes_cmd)
+			else:
+				return None
 
 	# get_answer
 	# Print the warnings, errors and fatal errors, get the answer
@@ -96,8 +100,9 @@ class ProtoSocket:
 		except socket.timeout:
 			log(WARNING, self.name()+".recv: reached timeout")
 			return None
-		except:
+		except Except as err:
 			eprint(self.name()+".recv: an unknown error occured")
+			print(err)
 		else:
 			if not res:
 				log(WARNING, self.name()+".recv: Connection terminated")
