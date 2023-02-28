@@ -26,12 +26,12 @@ class TrafficShaper:
 			self.udp_sock.close()
 		self.listen_sock.close()
 
-	def start(self):
+	def up(self):
 		self.keep_running = True
 		self.listen_thread = threading.Thread(target=traffic_shaper_listen, args=(self,), daemon=True)
 		self.listen_thread.start()
 
-	def stop(self):
+	def down(self):
 		self.keep_running = False
 		self.listen_thread.join()
 		
@@ -43,8 +43,8 @@ class TrafficShaper:
 				self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 				self.run()
 			except:
-				log.info("traffic shaper lost connection to controller")
-		log.info("door socket listening thread was interrupted")
+				log(INFO, "traffic shaper lost connection to controller")
+		log(INFO, "door socket listening thread was interrupted")
 
 	def run(self):
 		sel_list = [self.udp_sock, self.tcp_sock]
@@ -79,6 +79,8 @@ class TrafficShaper:
 		while msg:
 			blen, msg = msg[0:2], msg[2:]
 			length = decode_len(blen)
+			if length>len(msg):
+				return False
 			to_send, msg = msg[:length], msg[length:]
 			self.udp_sock.sendto(to_send, (self.udp_host, self.udp_port))
 		

@@ -1,5 +1,11 @@
+# External
+import subprocess
+
+# Internal
+from utils.logs import *
+
 def run(cmd, check=False, output=False, timeout=False):
-	log.command(cmd)
+	log(COMMAND, cmd)
 	res = subprocess.run(
 		command,
 		shell=True,
