@@ -14,9 +14,7 @@ class DoorServer:
 	"""DoorServer"""
 	def __init__(self):
 		# Getting controller IP
-		with open(to_root_path("var/controller.ip"), "r") as ip_file:
-			controller_ip = ip_file.read()
-		glob.init(controller_ip, self)
+		glob.init(self)
 		self.FIREWALL = Firewall()
 		self.DOOR_CONTROLLER = DoorController()
 		self.TRAFFIC_SHAPER = TrafficShaper()

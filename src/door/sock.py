@@ -10,6 +10,7 @@ class DoorSocket(ProtoSocket):
 	def __init__(self):
 		self.listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.socket = None
+		self.addr = None
 
 	def __del__(self):
 		if self.socket is not None:
@@ -28,7 +29,7 @@ class DoorSocket(ProtoSocket):
 
 	def accept(self):
 		try:
-			self.socket, addr = self.listen_socket.accept()
+			self.socket, self.addr = self.listen_socket.accept()
 		except:
 			log(ERROR, self.name()+".accept: an error occured when waiting for controller connection")
 			return False
