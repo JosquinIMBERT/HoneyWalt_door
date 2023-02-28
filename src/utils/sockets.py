@@ -31,7 +31,7 @@ class ProtoSocket:
 	def recv_obj(self, timeout=30):
 		bytlen = self.recv(size=OBJECT_SIZE, timeout=timeout)
 		if bytlen is not None:
-			bytobj = self.recv(size=from_bytes(bytlen, 'big'), timeout=timeout)
+			bytobj = self.recv(size=int.from_bytes(bytlen, 'big'), timeout=timeout)
 			if bytobj is not None:
 				return deserialize(bytobj)
 		return None
