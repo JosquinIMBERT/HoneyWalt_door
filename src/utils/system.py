@@ -12,7 +12,7 @@ def run(cmd, check=False, output=False, timeout=False):
 		check=check,
 		text=True,
 		capture_output=output,
-		timeout=timeout
+		timeout=None if not timeout else timeout
 	)
 	if output:
 		return str(res.stdout)

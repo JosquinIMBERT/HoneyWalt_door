@@ -1,3 +1,4 @@
+import glob
 from utils.files import *
 from utils.logs import *
 from utils.system import *
@@ -8,7 +9,7 @@ class Firewall:
 		pass
 
 	def up(self):
-		run(to_root_path("src/script/firewall-up.sh"))
+		run(to_root_path("src/script/firewall-up.sh")+" "+glob.CONTROLLER_IP)
 		return {"success": True}
 
 	def down(self):
