@@ -15,11 +15,11 @@ def traffic_shaper_listen(traffic_shaper):
 
 class TrafficShaper:
 	"""TrafficShaper: shape UDP traffic into TCP traffic"""
-	def __init__(self, udp_host="127.0.0.1", udp_port=51820):
+	def __init__(self, udp_host="127.0.0.1", udp_port=51820, tcp_host="127.0.0.1", tcp_port=51819):
 		self.udp_host=udp_host
 		self.udp_port=udp_port
-		self.tcp_host=glob.CONTROLLER_IP
-		self.tcp_port=glob.TRAFFIC_PORT
+		self.tcp_host=tcp_host
+		self.tcp_port=tcp_port
 		self.listen_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.listen_sock.bind((self.tcp_host, self.tcp_port))
 		self.tcp_sock = None
