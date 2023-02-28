@@ -33,7 +33,7 @@ def log(level, *args, **kwargs):
 			print("[FATAL]", *args, file=sys.stderr, **kwargs)
 		elif level == ERROR:
 			#trace = get_trace(nb_off=3)+":"
-			print("[ERROR]", trace, *args, file=sys.stderr, **kwargs)
+			print("[ERROR]", *args, file=sys.stderr, **kwargs)
 		elif level == WARNING:
 			trace = get_trace()+":"
 			print("[WARNING]", trace, *args, **kwargs)
