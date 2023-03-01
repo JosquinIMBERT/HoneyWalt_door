@@ -16,10 +16,19 @@ class DoorController(Controller):
 	def connect(self):
 		self.socket.connect()
 
+	def stop(self):
+		self.keep_running = False
+
+	def handler(self, signum, frame):
+		self.keep_running = False
+
 	def run(self):
 		self.keep_running = True
 		while self.keep_running:
-			if self.socket.accept():
+			signal.signal(signal.SIGINT, self.handler)
+			accepted = self.socket.accept()
+			signal.signal(signal.SIGINT, signal.SIG_IGN)
+			if accepted:
 				disconnected = False
 				while self.keep_running and not disconnected:
 					cmd = self.socket.recv_cmd()
@@ -27,7 +36,8 @@ class DoorController(Controller):
 						disconnected = True
 					else:
 						self.execute(cmd)
-				log(INFO, "DoorController.run: Client disconnected")
+				if disconnected:
+					log(INFO, "DoorController.run: Client disconnected")
 
 	def execute(self, cmd):
 		if cmd == CMD_DOOR_FIREWALL_UP:

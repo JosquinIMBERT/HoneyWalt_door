@@ -10,9 +10,6 @@ from utils.logs import *
 from utils.traffic_shaper import TrafficShaper
 from utils.wireguard import Wireguard
 
-def handle(signum, frame):
-	glob.SERVER.stop()
-
 class DoorServer:
 	"""DoorServer"""
 	def __init__(self):
@@ -26,7 +23,7 @@ class DoorServer:
 		self.TRAFFIC_SHAPER = TrafficShaper()
 		log(INFO, "DoorServer.__init__: building the wireguard manager")
 		self.WIREGUARD = Wireguard()
-		signal.signal(signal.SIGINT, handle) # handle ctrl-C
+		signal.signal(signal.SIGINT, signal.SIG_IGN) # ignore interrupts
 	
 	def stop(self):
 		try:
@@ -61,6 +58,8 @@ class DoorServer:
 		self.DOOR_CONTROLLER.connect()
 		log(INFO, "DoorServer.start: running the controller")
 		self.DOOR_CONTROLLER.run()
+		log(INFO, "DoorServer.start: left main control loop. stopping the server")
+		self.stop()
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='HoneyWalt Door Client: test the door protocol from a command line interface')
