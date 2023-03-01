@@ -1,5 +1,5 @@
 # External
-from python_wireguard import ClientConnection, Key, Server
+from python_wireguard import ClientConnection, Key, Server, wireguard
 import sys, os, time
 sys.path[0] = os.path.join(os.environ["HONEYWALT_DOOR_HOME"],"src/")
 
@@ -16,10 +16,12 @@ WG_PEER_IP = "192.168.0."
 class Wireguard:
 	"""Wireguard: manager for wireguard"""
 	def __init__(self):
-		self.privkey = None
-		self.pubkey = None
+		# We need to have keys in any case (even if they are not the expected ones)
+		self.privkey = Key("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=")
+		self.pubkey = Key("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=")
 		self.server = None
 		self.peers = []
+		self.name = "wg-srv"
 
 	# Executed before up
 	def pre_up(self):
@@ -27,14 +29,12 @@ class Wireguard:
 
 	# Set up wireguard interface
 	def up(self):
-		res = {"success": True}
-
 		pre_res = self.pre_up()
 		if not pre_res["success"]:
 			return pre_res
 
 		log(DEBUG, "Wireguard.up: building wireguard interface")
-		self.server = Server("wg-srv", self.privkey, WG_DOOR_IP, WG_DOOR_PORT)
+		self.server = Server(self.name, self.privkey, WG_DOOR_IP, WG_DOOR_PORT)
 
 		log(DEBUG, "Wireguard.up: enabling wireguard server")
 		self.server.enable()
@@ -48,7 +48,7 @@ class Wireguard:
 		if not post_res["success"]:
 			return post_res
 
-		return res
+		return {"success": True}
 
 	# Exeuted after up
 	def post_up(self):
@@ -62,21 +62,22 @@ class Wireguard:
 
 	# Set down wireguard interface
 	def down(self):
-		res = {"success": True}
+		if is_up():
+			return {"success": False}
+		else:
+			pre_res = self.pre_down()
+			if not pre_res["success"]:
+				return pre_res
 
-		pre_res = self.pre_down()
-		if not pre_res["success"]:
-			return pre_res
+			if self.server is None:
+				self.server = Server(self.name, self.privkey, WG_DOOR_IP, WG_DOOR_PORT)
+			self.server.delete_interface()
 
-		if self.server is None:
-			self.server = Server("wg-srv", self.privkey, WG_DOOR_IP, WG_DOOR_PORT)
-		self.server.delete_interface()
+			post_res = self.post_down()
+			if not post_res["success"]:
+				return post_res
 
-		post_res = self.post_down()
-		if not post_res["success"]:
-			return post_res
-
-		return res
+			return {"success": True}
 
 	# Executed after down
 	def post_down(self):
@@ -97,3 +98,9 @@ class Wireguard:
 	def add_peer(self, key, dev_id):
 		self.peers += [{"key":key, "ip": WG_PEER_IP+str(dev_id)}]
 		return {"success": True}
+
+	def is_up():
+		# The wireguard library does not allow to check which devices are up
+		# (Note: there is a wireguard.list_devices function but it prints the result to stdout instead of returning it)
+		res = run("wg-quick show interfaces", output=True)
+		return self.name in res.split(" ")
