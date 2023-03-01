@@ -105,7 +105,6 @@ class ProtoSocket:
 			import glob
 			if "SERVER" in dir(glob):
 				glob.SERVER.stop()
-			sys.exit(0)
 		except Exception as err:
 			eprint(self.name()+".recv: an unknown error occured")
 			print(err)

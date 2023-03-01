@@ -35,7 +35,6 @@ class DoorSocket(ProtoSocket):
 			import glob
 			if "SERVER" in dir(glob):
 				glob.SERVER.stop()
-			sys.exit(0)
 		except:
 			log(ERROR, self.name()+".accept: an error occured when waiting for controller connection")
 			return False

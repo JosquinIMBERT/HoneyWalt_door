@@ -1,5 +1,5 @@
 # External
-import argparse, signal
+import argparse, signal, sys
 
 # Internal
 from door.controller import DoorController
@@ -29,14 +29,32 @@ class DoorServer:
 		signal.signal(signal.SIGINT, handle) # handle ctrl-C
 	
 	def stop(self):
-		log(INFO, "DoorServer.stop: stopping wireguard")
-		self.WIREGUARD.down()
-		log(INFO, "DoorServer.stop: stopping the traffic shaper")
-		self.TRAFFIC_SHAPER.stop()
-		log(INFO, "DoorServer.stop: stopping the door controller")
-		self.DOOR_CONTROLLER.stop()
-		log(INFO, "DoorServer.stop: stopping the firewall")
-		self.FIREWALL.down()
+		try:
+			log(INFO, "DoorServer.stop: stopping wireguard")
+			self.WIREGUARD.down()
+		except Exception as err:
+			log(ERROR, "DoorServer.stop:", err)
+
+		try:
+			log(INFO, "DoorServer.stop: stopping the traffic shaper")
+			self.TRAFFIC_SHAPER.stop()
+		except Exception as err:
+			log(ERROR, "DoorServer.stop:", err)
+
+		try:
+			log(INFO, "DoorServer.stop: stopping the door controller")
+			self.DOOR_CONTROLLER.stop()
+		except Exception as err:
+			log(ERROR, "DoorServer.stop:", err)
+
+		try:
+			log(INFO, "DoorServer.stop: stopping the firewall")
+			self.FIREWALL.down()
+		except Exception as err:
+			log(ERROR, "DoorServer.stop:", err)
+
+		sys.exit(0)
+
 
 	def start(self):
 		log(INFO, "DoorServer.start: binding the controller socket")
