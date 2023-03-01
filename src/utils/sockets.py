@@ -104,7 +104,7 @@ class ProtoSocket:
 			log(INFO, self.name()+".recv: received KeyboardInterrupt")
 			import glob
 			if "SERVER" in dir(glob): glob.SERVER.stop()
-		except Except as err:
+		except Exception as err:
 			eprint(self.name()+".recv: an unknown error occured")
 			print(err)
 		else:
