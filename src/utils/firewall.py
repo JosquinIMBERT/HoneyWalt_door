@@ -9,9 +9,9 @@ class Firewall:
 		pass
 
 	def up(self, ip):
-		run(to_root_path("src/script/firewall-up.sh")+" "+ip)
+		run(to_root_path("src/script/firewall-up.sh")+" "+ip, "Failed to start firewall")
 		return {"success": True}
 
 	def down(self):
-		run(to_root_path("src/script/firewall-down.sh"))
+		run(to_root_path("src/script/firewall-down.sh"), , "Failed to stop firewall")
 		return {"success": True}

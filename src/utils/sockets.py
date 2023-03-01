@@ -40,8 +40,9 @@ class ProtoSocket:
 	def send_cmd(self, cmd):
 		if not self.connected():
 			log(ERROR, self.name()+".send_cmd: Failed to send a command. The socket is not connected")
+			return 0
 		else:
-			self.socket.send(cmd_to_bytes(cmd))
+			return self.socket.send(cmd_to_bytes(cmd))
 
 	# Receive a command (should be on COMMAND_SIZE bytes)
 	def recv_cmd(self):
@@ -90,7 +91,7 @@ class ProtoSocket:
 
 	# Send data to the socket
 	def send(self, bytes_msg):
-		self.socket.send(bytes_msg)
+		return self.socket.send(bytes_msg)
 
 	# Receive data on socket, with a timeout
 	def recv(self, size=2048, timeout=30):
@@ -106,8 +107,8 @@ class ProtoSocket:
 			if "SERVER" in dir(glob):
 				glob.SERVER.stop()
 		except Exception as err:
-			eprint(self.name()+".recv: an unknown error occured")
 			print(err)
+			eprint(self.name()+".recv: an unknown error occured")
 		else:
 			if not res:
 				log(WARNING, self.name()+".recv: Connection terminated")
