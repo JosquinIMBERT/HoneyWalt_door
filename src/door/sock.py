@@ -38,4 +38,5 @@ class DoorSocket(ProtoSocket):
 			log(ERROR, self.name()+".accept:", err)
 			return False
 		else:
+			log(INFO, self.name()+".accept: accepted a new client")
 			return True

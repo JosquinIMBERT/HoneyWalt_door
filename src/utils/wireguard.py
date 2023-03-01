@@ -62,7 +62,7 @@ class Wireguard:
 
 	# Set down wireguard interface
 	def down(self):
-		if is_up():
+		if not self.is_up():
 			return {"success": False}
 		else:
 			pre_res = self.pre_down()
@@ -99,7 +99,7 @@ class Wireguard:
 		self.peers += [{"key":key, "ip": WG_PEER_IP+str(dev_id)}]
 		return {"success": True}
 
-	def is_up():
+	def is_up(self):
 		# The wireguard library does not allow to check which devices are up
 		# (Note: there is a wireguard.list_devices function but it prints the result to stdout instead of returning it)
 		res = run("wg-quick show interfaces", output=True)
