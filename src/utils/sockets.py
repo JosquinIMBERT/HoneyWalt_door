@@ -64,7 +64,7 @@ class ProtoSocket:
 	def get_answer(self, timeout=30):
 		res = self.recv_obj(timeout=30)
 		if not res or not isinstance(res, dict) or not "success" in res: 
-			log(ERROR, self.name()+".wait_answer: received an invalid answer")
+			log(ERROR, self.name()+".get_answer: received an invalid answer")
 			return False
 		else:
 			# Logging warnings, errors, and fatal errors
@@ -100,6 +100,10 @@ class ProtoSocket:
 		except socket.timeout:
 			log(WARNING, self.name()+".recv: reached timeout")
 			return None
+		except KeyboardInterrupt:
+			log(INFO, self.name()+".recv: received KeyboardInterrupt")
+			import glob
+			if "SERVER" in dir(glob): glob.SERVER.stop()
 		except Except as err:
 			eprint(self.name()+".recv: an unknown error occured")
 			print(err)

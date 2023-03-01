@@ -36,13 +36,13 @@ class Wireguard:
 		log(DEBUG, "Wireguard.up: building wireguard interface")
 		self.server = Server("wg-srv", self.privkey, WG_DOOR_IP, WG_DOOR_PORT)
 
+		log(DEBUG, "Wireguard.up: enabling wireguard server")
+		self.server.enable()
+
 		# Add peers
 		for peer in self.peers:
 			log(DEBUG, "Wireguard.up: adding peer (key: "+peer["key"]+" IP: "+peer["ip"]+")")
 			self.server.add_client(ClientConnection(Key(peer["key"]), peer["ip"]))
-
-		log(DEBUG, "Wireguard.up: enabling wireguard server")
-		self.server.enable()
 
 		post_res = self.post_up()
 		if not post_res["success"]:
