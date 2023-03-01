@@ -1,5 +1,5 @@
 # External
-import argparse, signal, sys
+import argparse, signal, sys, threading
 
 # Internal
 from door.controller import DoorController
@@ -69,6 +69,8 @@ if __name__ == '__main__':
 	if options.log_level is not None:
 		log_level = options.log_level[0]
 		set_log_level(log_level)
+
+	threading.current_thread().name = "MainThread"
 
 	door_server = DoorServer()
 	door_server.start()

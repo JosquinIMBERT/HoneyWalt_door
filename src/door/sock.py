@@ -30,6 +30,9 @@ class DoorSocket(ProtoSocket):
 	def accept(self):
 		try:
 			self.socket, self.addr = self.listen_socket.accept()
+		except KeyboardInterrupt:
+			log(DEBUG, self.name()+".accept: received KeyboardInterrupt")
+			return False
 		except Exception as err:
 			log(ERROR, self.name()+".accept: an error occured when waiting for controller connection")
 			log(ERROR, self.name()+".accept:", err)

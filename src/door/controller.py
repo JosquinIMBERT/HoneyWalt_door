@@ -1,3 +1,6 @@
+# External
+import signal, threading
+
 # Internal
 from door.proto import *
 from door.sock import *
@@ -20,7 +23,9 @@ class DoorController(Controller):
 		self.keep_running = False
 
 	def handler(self, signum, frame):
+		log(DEBUG, "DoorController.handler: "+threading.current_thread().name)
 		self.keep_running = False
+		raise KeyboardInterrupt
 
 	def run(self):
 		self.keep_running = True
