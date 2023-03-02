@@ -4,11 +4,11 @@ import argparse, signal, sys, threading
 # Internal
 from door.controller import DoorController
 import glob
+from tools.firewall import Firewall
+from tools.traffic_shaper import TrafficShaper
+from tools.wireguard import Wireguard
 from utils.files import *
-from utils.firewall import Firewall
 from utils.logs import *
-from utils.traffic_shaper import TrafficShaper
-from utils.wireguard import Wireguard
 
 class DoorServer:
 	"""DoorServer"""
