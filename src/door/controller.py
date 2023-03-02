@@ -2,7 +2,7 @@
 import signal, threading
 
 # Internal
-from door.proto import *
+from common.door.proto import *
 from door.sock import *
 import glob
 from common.utils.controller import Controller

@@ -4,7 +4,7 @@ import socket, time
 # Internal
 from common.utils.logs import *
 from common.utils.sockets import *
-from door.proto import *
+from common.door.proto import *
 
 class DoorSocket(ProtoSocket):
 	def __init__(self):
