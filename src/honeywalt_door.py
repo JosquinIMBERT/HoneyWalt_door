@@ -7,8 +7,8 @@ import glob
 from tools.firewall import Firewall
 from tools.traffic_shaper import TrafficShaper
 from tools.wireguard import Wireguard
-from utils.files import *
-from utils.logs import *
+from common.utils.files import *
+from common.utils.logs import *
 
 class DoorServer:
 	"""DoorServer"""

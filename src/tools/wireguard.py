@@ -1,12 +1,11 @@
 # External
 from python_wireguard import ClientConnection, Key, Server, wireguard
 import sys, os, time
-sys.path[0] = os.path.join(os.environ["HONEYWALT_DOOR_HOME"],"src/")
 
 # Internal
-from utils.files import *
-from utils.logs import *
-from utils.system import *
+from common.utils.files import *
+from common.utils.logs import *
+from common.utils.system import *
 
 global WG_DOOR_PORT, WG_DOOR_IP
 WG_DOOR_PORT = 51820

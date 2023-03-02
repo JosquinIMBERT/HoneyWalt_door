@@ -2,8 +2,8 @@
 import socket, time
 
 # Internal
-from utils.logs import *
-from utils.sockets import *
+from common.utils.logs import *
+from common.utils.sockets import *
 from door.proto import *
 
 class DoorSocket(ProtoSocket):

@@ -1,7 +1,7 @@
 import glob
-from utils.files import *
-from utils.logs import *
-from utils.system import *
+from common.utils.files import *
+from common.utils.logs import *
+from common.utils.system import *
 
 class Firewall:
 	"""Firewall: class for the door's firewall"""
