@@ -3,21 +3,21 @@ import signal, threading
 
 # Internal
 from common.door.proto import *
-from door.sock import *
-import glob
 from common.utils.controller import Controller
 from common.utils.logs import *
+from common.utils.sockets import ServerSocket
+import glob
 
 class DoorController(Controller):
 	def __init__(self):
-		self.socket = DoorSocket()
+		self.socket = ServerSocket(DOOR_PORT)
 		self.keep_running = False
 
 	def __del__(self):
 		del self.socket
 
 	def connect(self):
-		self.socket.connect()
+		self.socket.bind()
 
 	def stop(self):
 		self.keep_running = False

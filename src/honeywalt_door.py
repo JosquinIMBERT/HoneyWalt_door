@@ -62,7 +62,7 @@ class DoorServer:
 		self.stop()
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description='HoneyWalt Door Client: test the door protocol from a command line interface')
+	parser = argparse.ArgumentParser(description='HoneyWalt Door Daemon')
 	parser.add_argument("-l", "--log-level", nargs=1, help="Set log level (COMMAND, DEBUG, INFO, WARNING, ERROR, FATAL)")
 
 	options = parser.parse_args()
