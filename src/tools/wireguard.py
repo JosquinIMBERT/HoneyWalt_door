@@ -7,10 +7,10 @@ from common.utils.files import *
 from common.utils.logs import *
 from common.utils.system import *
 
-global WG_DOOR_PORT, WG_DOOR_IP
+global WG_DOOR_PORT, WG_DOOR_IP, WG_PEER_IP, WG_PEER_MASK
 WG_DOOR_PORT = 51820
-WG_DOOR_IP = "192.168.0.254/24"
-WG_PEER_IP = "192.168.0."
+WG_DOOR_IP = "192.168.0.254/16"
+WG_PEER_IP = "192.168."
 
 class Wireguard:
 	"""Wireguard: manager for wireguard"""
@@ -21,6 +21,9 @@ class Wireguard:
 		self.server = None
 		self.peers = []
 		self.name = "wg-srv"
+
+	def generate_ip(self, dev_id):
+		return WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
 
 	# Executed before up
 	def pre_up(self):
@@ -101,7 +104,7 @@ class Wireguard:
 
 	# Add a wireguard peer
 	def add_peer(self, key, dev_id):
-		self.peers += [{"key":key, "ip": WG_PEER_IP+str(dev_id)}]
+		self.peers += [{"key":key, "ip": self.generate_ip(dev_id)}]
 		return {"success": True}
 
 	def is_up(self):
