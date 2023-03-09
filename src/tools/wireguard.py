@@ -54,19 +54,19 @@ class Wireguard:
 
 	# Exeuted after up
 	def post_up(self):
-		run(
-			"iptables -A POSTROUTING -t nat -s 192.168.0.0/24 -j MASQUERADE",
-			"Failed to start wireguard packets masquerade"
-		)
-		return {"success": True}
+		if not run("iptables -A POSTROUTING -t nat -s 192.168.0.0/24 -j MASQUERADE"):
+			log(ERROR, "Wireguard.post_up: failed to start wireguard packets masquerade")
+			return {"success": False, "error": ["failed to start wireguard packets masquerade"]}
+		else:
+			return {"success": True}
 
 	# Executed before down
 	def pre_down(self):
-		run(
-			"iptables -D POSTROUTING -t nat -s 192.168.0.0/24 -j MASQUERADE",
-			"Failed to stop wireguard packets masquerade"
-		)
-		return {"success": True}
+		if not run("iptables -D POSTROUTING -t nat -s 192.168.0.0/24 -j MASQUERADE"):
+			log(ERROR, "Wireguard.pre_down: failed to stop wireguard packets masquerade")
+			return {"success": False, "error": ["failed to stop wireguard packets masquerade"]}
+		else:
+			return {"success": True}
 
 	# Set down wireguard interface
 	def down(self):
@@ -110,9 +110,5 @@ class Wireguard:
 	def is_up(self):
 		# The wireguard library does not allow to check which devices are up
 		# (Note: there is a wireguard.list_devices function but it prints the result to stdout instead of returning it)
-		res = run(
-			"wg-quick show interfaces",
-			"Failed to list wireguard interfaces",
-			output=True
-		)
+		res = run("wg show interfaces", output=True)
 		return self.name in res.split(" ")
