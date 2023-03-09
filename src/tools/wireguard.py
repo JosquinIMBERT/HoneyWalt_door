@@ -112,7 +112,7 @@ class Wireguard:
 		# (Note: there is a wireguard.list_devices function but it prints the result to stdout instead of returning it)
 		res = run(
 			"wg-quick show interfaces",
-			"Failed to list wireguard interfaces"
+			"Failed to list wireguard interfaces",
 			output=True
 		)
 		return self.name in res.split(" ")
