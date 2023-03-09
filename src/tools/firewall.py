@@ -13,5 +13,5 @@ class Firewall:
 		return {"success": True}
 
 	def down(self):
-		run(to_root_path("src/script/firewall-down.sh"), , "Failed to stop firewall")
+		run(to_root_path("src/script/firewall-down.sh"), "Failed to stop firewall")
 		return {"success": True}
