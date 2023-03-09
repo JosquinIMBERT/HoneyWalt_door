@@ -111,4 +111,4 @@ class Wireguard:
 		# The wireguard library does not allow to check which devices are up
 		# (Note: there is a wireguard.list_devices function but it prints the result to stdout instead of returning it)
 		res = run("wg show interfaces", output=True)
-		return self.name in res.split(" ")
+		return self.name in res.split()
