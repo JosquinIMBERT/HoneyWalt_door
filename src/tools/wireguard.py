@@ -32,6 +32,11 @@ class Wireguard:
 	def up(self):
 		res = {"success": True, ERROR:[], WARNING:[], INFO:[]}
 		
+		if self.is_up():
+			log(WARNING, "Wireguard.up: the interface is already up. Trying to restart it")
+			down_res = self.down()
+			if FATAL in down_res: return down_res
+
 		res = self.pre_up(res)
 		if FATAL in res: return res
 
@@ -39,7 +44,12 @@ class Wireguard:
 		self.server = Server(self.name, self.privkey, WG_DOOR_IP, WG_DOOR_PORT)
 
 		log(DEBUG, "Wireguard.up: enabling wireguard server")
-		self.server.enable()
+		try:
+			self.server.enable()
+		except Exception as err:
+			log(ERROR, "Wireguard.up:", err)
+			res[ERROR] += ["failed to enable wireguard server"]
+			return res
 
 		# Add peers
 		for peer in self.peers:
