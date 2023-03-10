@@ -75,5 +75,5 @@ class DoorController(Controller):
 			self.socket.send_obj({"success": True})
 		else:
 			log(WARNING, "DoorController.execute: received invalid command")
-			res = {"success": False, "error": ["unknown command"]}
+			res = {"success": False, ERROR: ["unknown command"]}
 			self.socket.send_obj(res)

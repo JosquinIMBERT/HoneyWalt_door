@@ -56,7 +56,7 @@ class Wireguard:
 	def post_up(self):
 		if not run("iptables -A POSTROUTING -t nat -s 192.168.0.0/24 -j MASQUERADE"):
 			log(ERROR, "Wireguard.post_up: failed to start wireguard packets masquerade")
-			return {"success": False, "error": ["failed to start wireguard packets masquerade"]}
+			return {"success": False, ERROR: ["failed to start wireguard packets masquerade"]}
 		else:
 			return {"success": True}
 
@@ -64,7 +64,7 @@ class Wireguard:
 	def pre_down(self):
 		if not run("iptables -D POSTROUTING -t nat -s 192.168.0.0/24 -j MASQUERADE"):
 			log(ERROR, "Wireguard.pre_down: failed to stop wireguard packets masquerade")
-			return {"success": False, "error": ["failed to stop wireguard packets masquerade"]}
+			return {"success": False, ERROR: ["failed to stop wireguard packets masquerade"]}
 		else:
 			return {"success": True}
 
