@@ -47,7 +47,7 @@ class DoorController(Controller):
 	def execute(self, cmd):
 		if cmd == CMD_DOOR_FIREWALL_UP:
 			log(INFO, "DoorController.execute: setting firewall up")
-			self.exec(glob.SERVER.FIREWALL.up, self.socket.addr[0])
+			self.exec(glob.SERVER.FIREWALL.up, self.socket.remaddr[0])
 		elif cmd == CMD_DOOR_FIREWALL_DOWN:
 			log(INFO, "DoorController.execute: setting firewall down")
 			self.exec(glob.SERVER.FIREWALL.down)
