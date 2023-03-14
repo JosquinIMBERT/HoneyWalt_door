@@ -11,6 +11,7 @@ import glob
 class DoorController(Controller):
 	def __init__(self):
 		self.socket = ServerSocket(DOOR_PORT)
+		self.socket.set_name("Socket(Door-Controller)")
 		self.keep_running = False
 
 	def __del__(self):
