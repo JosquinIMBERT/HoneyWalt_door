@@ -34,7 +34,7 @@ class DoorServer:
 
 		try:
 			log(INFO, "DoorServer.stop: stopping the traffic shaper")
-			self.TRAFFIC_SHAPER.stop()
+			self.TRAFFIC_SHAPER.down()
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 

@@ -24,6 +24,7 @@ class TrafficShaper:
 		self.listen_sock.bind((self.tcp_host, self.tcp_port))
 		self.tcp_sock = None
 		self.udp_sock = None
+		self.listen_thread = None
 
 	def __del__(self):
 		if self.tcp_sock is not None:
@@ -39,7 +40,8 @@ class TrafficShaper:
 
 	def down(self):
 		self.keep_running = False
-		self.listen_thread.join()
+		if self.listen_thread is not None:
+			self.listen_thread.join()
 		
 	def listen(self):
 		self.listen_sock.listen(1)
