@@ -10,6 +10,8 @@ import glob
 
 class DoorController(Controller):
 	def __init__(self):
+		Controller.__init__(self)
+		log(INFO, self.get_name()+".__init__: creating DoorController")
 		self.socket = ServerSocket(DOOR_PORT)
 		self.socket.set_name("Socket(Door-Controller)")
 		self.keep_running = False
