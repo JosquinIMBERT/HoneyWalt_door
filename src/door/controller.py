@@ -63,6 +63,9 @@ class DoorController(Controller):
 		elif cmd == CMD_DOOR_WG_DOWN:
 			log(INFO, "DoorController.execute: setting wireguard down")
 			self.exec(glob.SERVER.WIREGUARD.down)
+		elif cmd == CMD_DOOR_WG_RESET:
+			log(INFO, "DoorController.execute: reset peers")
+			self.exec(glob.SERVER.WIREGUARD.reset_peers)
 		elif cmd == CMD_DOOR_WG_ADD_PEER:
 			log(INFO, "DoorController.execute: adding wireguard peer")
 			args = self.socket.recv_obj()

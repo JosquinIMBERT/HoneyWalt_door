@@ -115,9 +115,15 @@ class Wireguard:
 
 		return res
 
+	def reset_peers(self):
+		self.peers = []
+
 	# Add a wireguard peer
 	def add_peer(self, key, dev_id):
-		self.peers += [{"key":key, "ip": self.generate_ip(dev_id)}]
+		self.peers += [{
+			"key":key,
+			"ip": self.generate_ip(dev_id)
+		}]
 		return {"success": True}
 
 	def is_up(self):
