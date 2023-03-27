@@ -22,6 +22,9 @@ class DoorController(Controller):
 	def connect(self):
 		self.socket.bind()
 
+	def reconnect(self):
+		return self.socket.accept()
+
 	def stop(self):
 		self.keep_running = False
 
