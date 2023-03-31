@@ -35,6 +35,7 @@ class TrafficShaper:
 
 	def up(self):
 		self.keep_running = True
+		self.listen_socket.settimeout(5)
 		self.listen_thread = threading.Thread(target=traffic_shaper_listen, args=(self,), daemon=True)
 		self.listen_thread.start()
 
