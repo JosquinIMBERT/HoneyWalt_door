@@ -2,6 +2,7 @@
 import select, socket, threading
 
 # Internal
+from common.utils.logs import *
 import glob
 
 def encode_len(bytes_obj):
@@ -51,9 +52,13 @@ class TrafficShaper:
 				self.tcp_sock, addr = self.listen_sock.accept()
 				self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 				self.run()
-			except:
-				log(INFO, "traffic shaper lost connection to controller")
-		log(INFO, "door socket listening thread was interrupted")
+			except socket.timeout:
+				pass
+			except Exception as err:
+				log(INFO, "an unknown error occured when waiting for the controller to connect")
+				log(ERROR, err)
+			else:
+				log(INFO, "door socket listening thread was interrupted")
 
 	def run(self):
 		sel_list = [self.udp_sock, self.tcp_sock]
