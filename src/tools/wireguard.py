@@ -29,7 +29,7 @@ class Wireguard:
 	def pre_up(self, res): return res
 
 	# Set up wireguard interface
-	def up(self):
+	def up(self, client):
 		res = {"success": True, ERROR:[], WARNING:[], INFO:[]}
 		
 		if self.is_up():
@@ -82,7 +82,7 @@ class Wireguard:
 			return res
 
 	# Set down wireguard interface
-	def down(self):
+	def down(self, client):
 		res = {"success": True, ERROR:[], WARNING:[], INFO:[]}
 
 		if not self.is_up():
@@ -105,21 +105,21 @@ class Wireguard:
 	def post_down(self, res): return res
 
 	# Generate wireguard keys
-	def keygen(self):
-		res = {"success": True, "answer": {}}
+	def keygen(self, client):
+		res = {}
 
 		self.privkey, self.pubkey = Key.key_pair()
 
-		res["answer"]["privkey"] = str(self.privkey)
-		res["answer"]["pubkey"]  = str(self.pubkey)
+		res["privkey"] = str(self.privkey)
+		res["pubkey"]  = str(self.pubkey)
 
 		return res
 
-	def reset_peers(self):
+	def reset_peers(self, client):
 		self.peers = []
 
 	# Add a wireguard peer
-	def add_peer(self, key, dev_id):
+	def add_peer(self, client, key, dev_id):
 		self.peers += [{
 			"key":key,
 			"ip": self.generate_ip(dev_id)

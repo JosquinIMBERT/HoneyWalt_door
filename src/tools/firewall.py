@@ -8,14 +8,14 @@ class Firewall:
 	def __init__(self):
 		pass
 
-	def up(self, ip):
+	def up(self, client, ip):
 		if not run(to_root_path("src/script/firewall-up.sh")+" "+ip):
 			log(WARNING, "Firewall.up: failed to start firewall")
 			return {"success": False}
 		else:
 			return {"success": True}
 
-	def down(self):
+	def down(self, client):
 		if not run(to_root_path("src/script/firewall-down.sh")):
 			log(WARNING, "Firewall.down: failed to stop firewall")
 			return {"success": False}

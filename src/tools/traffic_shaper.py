@@ -34,13 +34,13 @@ class TrafficShaper:
 			self.udp_sock.close()
 		self.listen_sock.close()
 
-	def up(self):
+	def up(self, client):
 		self.keep_running = True
 		self.listen_sock.settimeout(5)
 		self.listen_thread = threading.Thread(target=traffic_shaper_listen, args=(self,), daemon=True)
 		self.listen_thread.start()
 
-	def down(self):
+	def down(self, client):
 		self.keep_running = False
 		if self.listen_thread is not None:
 			self.listen_thread.join()
