@@ -2,7 +2,8 @@
 import argparse, signal, sys, threading
 
 # Internal
-from door.controller import DoorController
+#from door.controller import DoorController
+from door.DoorController import DoorController
 import glob
 from tools.firewall import Firewall
 from tools.traffic_shaper import TrafficShaper
@@ -23,7 +24,7 @@ class DoorServer:
 		self.TRAFFIC_SHAPER = TrafficShaper()
 		log(INFO, "DoorServer.__init__: building the wireguard manager")
 		self.WIREGUARD = Wireguard()
-		signal.signal(signal.SIGINT, signal.SIG_IGN) # ignore interrupts
+		#signal.signal(signal.SIGINT, signal.SIG_IGN) # ignore interrupts
 	
 	def stop(self):
 		try:
@@ -54,12 +55,8 @@ class DoorServer:
 
 
 	def start(self):
-		log(INFO, "DoorServer.start: binding the controller socket")
-		self.DOOR_CONTROLLER.connect()
-		log(INFO, "DoorServer.start: running the controller")
-		self.DOOR_CONTROLLER.run()
-		log(INFO, "DoorServer.start: left main control loop. stopping the server")
-		self.stop()
+		log(INFO, "DoorServer.start: starting the controller")
+		self.DOOR_CONTROLLER.start()
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='HoneyWalt Door Daemon')
@@ -70,7 +67,7 @@ if __name__ == '__main__':
 		log_level = options.log_level[0]
 		set_log_level(log_level)
 
-	threading.current_thread().name = "MainThread"
+	#threading.current_thread().name = "MainThread"
 
 	door_server = DoorServer()
 	door_server.start()
