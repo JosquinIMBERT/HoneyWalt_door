@@ -19,8 +19,8 @@ class DoorController():
 
 	def start(self):
 		authenticator = SSLAuthenticator(
-			to_root_path("var/key/pki/private/door-server.key"),
-			to_root_path("var/key/pki/door-server.crt"),
+			to_root_path("var/key/pki/private/server.key"),
+			to_root_path("var/key/pki/server.crt"),
 			ca_certs=to_root_path("var/key/pki/ca.crt"),
 			cert_reqs=ssl.CERT_REQUIRED,
 			ssl_version=ssl.PROTOCOL_TLS
