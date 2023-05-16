@@ -11,13 +11,15 @@ class Firewall:
 	def up(self, client, ip):
 		if not run(to_root_path("src/script/firewall-up.sh")+" "+ip):
 			log(WARNING, "Firewall.up: failed to start firewall")
-			return {"success": False}
+			client.log(ERROR, "failed to start firewall")
+			return False
 		else:
-			return {"success": True}
+			return True
 
 	def down(self, client):
 		if not run(to_root_path("src/script/firewall-down.sh")):
 			log(WARNING, "Firewall.down: failed to stop firewall")
-			return {"success": False}
+			client.log(ERROR, "failed to stop firewall")
+			return False
 		else:
-			return {"success": True}
+			return True

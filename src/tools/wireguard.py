@@ -26,19 +26,15 @@ class Wireguard:
 		return WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
 
 	# Executed before up
-	def pre_up(self, res): return res
+	def pre_up(self, client): return True
 
 	# Set up wireguard interface
-	def up(self, client):
-		res = {"success": True, ERROR:[], WARNING:[], INFO:[]}
-		
+	def up(self, client):		
 		if self.is_up():
 			log(WARNING, "Wireguard.up: the interface is already up. Trying to restart it")
-			down_res = self.down()
-			if FATAL in down_res: return down_res
+			if not self.down(client): return None
 
-		res = self.pre_up(res)
-		if FATAL in res: return res
+		self.pre_up(client)
 
 		log(DEBUG, "Wireguard.up: building wireguard interface")
 		self.server = Server(self.name, self.privkey, WG_DOOR_IP, WG_DOOR_PORT)
@@ -48,61 +44,54 @@ class Wireguard:
 			self.server.enable()
 		except Exception as err:
 			log(ERROR, "Wireguard.up:", err)
-			res[ERROR] += ["failed to enable wireguard server"]
-			return res
+			client.log(ERROR, "failed to enable wireguard server")
+			return None
 
 		# Add peers
 		for peer in self.peers:
 			log(DEBUG, "Wireguard.up: adding peer (key: "+peer["key"]+" IP: "+peer["ip"]+")")
 			self.server.add_client(ClientConnection(Key(peer["key"]), peer["ip"]))
 
-		res = self.post_up(res)
-		if FATAL in res: return res
+		self.post_up(client)
 
-		return res
+		return True
 
 	# Exeuted after up
-	def post_up(self, res):
+	def post_up(self, client):
 		if not run("iptables -A POSTROUTING -t nat -s 192.168.0.0/24 -j MASQUERADE"):
 			log(ERROR, "Wireguard.post_up: failed to start wireguard packets masquerade")
-			res[ERROR] += ["failed to start wireguard packets masquerade"]
-			res["success"] = False
-			return res
+			client.log(ERROR, "failed to start wireguard packets masquerade")
+			return False
 		else:
-			return res
+			return True
 
 	# Executed before down
-	def pre_down(self, res):
+	def pre_down(self, client):
 		if not run("iptables -D POSTROUTING -t nat -s 192.168.0.0/24 -j MASQUERADE"):
 			log(ERROR, "Wireguard.pre_down: failed to stop wireguard packets masquerade")
-			res[ERROR] += ["failed to stop wireguard packets masquerade"]
-			res["success"] = False
-			return res
+			client.log(ERROR, "failed to stop wireguard packets masquerade")
+			return None
 		else:
-			return res
+			return True
 
 	# Set down wireguard interface
 	def down(self, client):
-		res = {"success": True, ERROR:[], WARNING:[], INFO:[]}
-
 		if not self.is_up():
-			res[INFO] += ["the wireguard interface is already down"]
-			return res
+			client.log(INFO, "the wireguard interface is already down")
+			return None
 		else:
-			res = self.pre_down(res)
-			if FATAL in res: return res
+			self.pre_down(client)
 
 			if self.server is None:
 				self.server = Server(self.name, self.privkey, WG_DOOR_IP, WG_DOOR_PORT)
 			self.server.delete_interface()
 
-			res = self.post_down(res)
-			if FATAL in res: return res
+			self.post_down(client)
 
-			return res
+			return True
 
 	# Executed after down
-	def post_down(self, res): return res
+	def post_down(self, client): return True
 
 	# Generate wireguard keys
 	def keygen(self, client):
@@ -124,7 +113,7 @@ class Wireguard:
 			"key":key,
 			"ip": self.generate_ip(dev_id)
 		}]
-		return {"success": True}
+		return True
 
 	def is_up(self):
 		# The wireguard library does not allow to check which devices are up
