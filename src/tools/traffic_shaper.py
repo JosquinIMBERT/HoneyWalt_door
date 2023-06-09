@@ -55,25 +55,32 @@ class TrafficShaper:
 			except socket.timeout:
 				pass
 			except Exception as err:
-				log(INFO, "an unknown error occured when waiting for the controller to connect")
+				log(INFO, "TrafficShaper.listen: an unknown error occured when waiting for the controller to connect")
 				log(ERROR, err)
 			else:
-				log(INFO, "door socket listening thread was interrupted")
+				log(INFO, "TrafficShaper.listen: door socket listening thread was interrupted")
 
 	def run(self):
 		sel_list = [self.udp_sock, self.tcp_sock]
 		try:
-			while self.keep_running:
+			connected = True
+			while self.keep_running and connected:
 				rready, _, _ = select.select(sel_list, [], [])
 				for ready in rready:
 					if ready is self.udp_sock:
 						if not self.recv_udp():
+							connected = False
+							break
+					elif ready is self.tcp_sock:
+						if not self.recv_tcp():
+							connected = False
 							break
 					else:
-						if not self.recv_tcp():
-							break
+						log(ERROR, "TrafficShaper.run: Select returned while no socket is ready")
+						connected = False
+						break
 		except ConnectionResetError:
-			log.info("traffic shaper connection reset")
+			log(WARNING, "TrafficShaper.run: traffic shaper connection reset")
 
 	def recv_udp(self):
 		msg, addr = self.udp_sock.recvfrom(1024)
