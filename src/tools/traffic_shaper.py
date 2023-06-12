@@ -72,7 +72,7 @@ class TrafficShaper:
 		try:
 			connected = True
 			while self.keep_running and connected:
-				rready, _, _ = select.select(sel_list, [], [])
+				rready, _, _ = select.select(sel_list, [], [], 5)
 				for ready in rready:
 					if ready is self.udp_sock:
 						if not self.recv_udp():
@@ -83,9 +83,8 @@ class TrafficShaper:
 							connected = False
 							break
 					else:
-						log(ERROR, "TrafficShaper.run: Select returned while no socket is ready")
-						connected = False
-						break
+						# A timeout was reached
+						continue
 		except ConnectionResetError:
 			log(WARNING, "TrafficShaper.run: traffic shaper connection reset")
 
