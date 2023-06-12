@@ -109,6 +109,7 @@ class TrafficShaper:
 			if length>len(msg):
 				return False
 			to_send, msg = msg[:length], msg[length:]
+			log(DEBUG, "TrafficShaper: Forwarding message: ", to_send)
 			self.udp_sock.sendto(to_send, (self.udp_host, self.udp_port))
 		
 		return True
