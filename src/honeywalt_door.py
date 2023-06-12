@@ -10,6 +10,7 @@ from tools.traffic_shaper import TrafficShaper
 from tools.wireguard import Wireguard
 from common.utils.files import *
 from common.utils.logs import *
+from common.utils.rpc import *
 
 class DoorServer:
 	"""DoorServer"""
@@ -27,15 +28,16 @@ class DoorServer:
 		#signal.signal(signal.SIGINT, signal.SIG_IGN) # ignore interrupts
 	
 	def stop(self):
+		fake_client = FakeClient()
 		try:
 			log(INFO, "DoorServer.stop: stopping wireguard")
-			self.WIREGUARD.down()
+			self.WIREGUARD.down(fake_client)
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 
 		try:
 			log(INFO, "DoorServer.stop: stopping the traffic shaper")
-			self.TRAFFIC_SHAPER.down()
+			self.TRAFFIC_SHAPER.down(fake_client)
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 
@@ -47,7 +49,7 @@ class DoorServer:
 
 		try:
 			log(INFO, "DoorServer.stop: stopping the firewall")
-			self.FIREWALL.down()
+			self.FIREWALL.down(fake_client)
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 

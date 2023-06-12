@@ -6,6 +6,7 @@ if __name__ == "__main__":
 
 # Internal
 from common.utils.logs import *
+from common.utils.rpc import *
 import glob
 
 def encode_len(bytes_obj):
@@ -135,6 +136,6 @@ if __name__ == "__main__":
 	print("  - tcp_port=", tcp_port)
 
 	ts = TrafficShaper(udp_host=udp_host, udp_port=udp_port, tcp_host=tcp_host, tcp_port=tcp_port)
-	ts.up(sys)
+	ts.up(FakeClient())
 	ts.wait()
 	del ts
