@@ -1,5 +1,8 @@
 # External
-import select, socket, threading
+import select, socket, sys, threading
+
+if __name__ == "__main__":
+	sys.path[0] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Internal
 from common.utils.logs import *
@@ -16,7 +19,7 @@ def traffic_shaper_listen(traffic_shaper):
 
 class TrafficShaper:
 	"""TrafficShaper: shape UDP traffic into TCP traffic"""
-	def __init__(self, udp_host="127.0.0.1", udp_port=51820, tcp_host="127.0.0.1", tcp_port=51819):
+	def __init__(self, udp_host="127.0.0.1", udp_port=51820, tcp_host="0.0.0.0", tcp_port=51819):
 		self.udp_host=udp_host
 		self.udp_port=udp_port
 		self.tcp_host=tcp_host
@@ -44,6 +47,9 @@ class TrafficShaper:
 		self.keep_running = False
 		if self.listen_thread is not None:
 			self.listen_thread.join()
+
+	def wait(self):
+		self.listen_thread.join()
 		
 	def listen(self):
 		self.listen_sock.listen(1)
@@ -106,3 +112,29 @@ class TrafficShaper:
 			self.udp_sock.sendto(to_send, (self.udp_host, self.udp_port))
 		
 		return True
+
+if __name__ == "__main__":
+	import argparse
+
+	parser = argparse.ArgumentParser(description="Run the door's TrafficShaper")
+	parser.add_argument("-uh", "--udp-host", nargs=1, help="UDP Host to connect to", default=["127.0.0.1"])
+	parser.add_argument("-up", "--udp-port", nargs=1, help="UDP Port to connect to", default=[51820])
+	parser.add_argument("-th", "--tcp-host", nargs=1, help="TCP Host to listen on",  default=["0.0.0.0"])
+	parser.add_argument("-tp", "--tcp-port", nargs=1, help="TCP Port to listen on",  default=[51819])
+
+	options = parser.parse_args()
+	udp_host = options.udp_host[0]
+	udp_port = options.udp_port[0]
+	tcp_host = options.tcp_host[0]
+	tcp_port = options.tcp_port[0]
+
+	print("Running TrafficShaper with:")
+	print("  - udp_host=", udp_host)
+	print("  - udp_port=", udp_port)
+	print("  - tcp_host=", tcp_host)
+	print("  - tcp_port=", tcp_port)
+
+	ts = TrafficShaper(udp_host=udp_host, udp_port=udp_port, tcp_host=tcp_host, tcp_port=tcp_port)
+	ts.up(sys)
+	ts.wait()
+	del ts
