@@ -12,6 +12,9 @@ from common.utils.files import *
 from common.utils.logs import *
 from common.utils.rpc import *
 
+def terminate(signume, frame):
+	glob.SERVER.stop()
+
 class DoorServer:
 	"""DoorServer"""
 	def __init__(self):
@@ -25,7 +28,8 @@ class DoorServer:
 		self.TRAFFIC_SHAPER = TrafficShaper()
 		log(INFO, "DoorServer.__init__: building the wireguard manager")
 		self.WIREGUARD = Wireguard()
-		#signal.signal(signal.SIGINT, signal.SIG_IGN) # ignore interrupts
+		signal.signal(signal.SIGINT, terminate)
+		signal.signal(signal.SIGTERM, terminate)
 	
 	def stop(self):
 		fake_client = FakeClient()
