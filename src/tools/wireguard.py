@@ -11,7 +11,7 @@ from common.utils.rpc import *
 
 global WG_DOOR_PORT, WG_DOOR_IP, WG_PEER_IP, WG_PEER_MASK, CONF_PATH
 WG_DOOR_PORT = 51820
-WG_DOOR_IP	 = "192.168.0.254/16"
+WG_DOOR_IP	 = "192.168.0.254"
 WG_PEER_IP	 = "192.168."
 WG_PEER_MASK = "16"
 CONF_PATH	 = "/etc/wireguard/"
