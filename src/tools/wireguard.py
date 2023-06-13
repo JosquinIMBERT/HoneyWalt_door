@@ -80,7 +80,7 @@ class Wireguard:
 			peer_config = template_peer.substitute({
 				"pubkey": peer["key"],
 				"address": peer["ip"],
-				"mask": WG_PEER_MASK
+				"mask": "32"
 			})
 			config += "\n" + peer_config
 

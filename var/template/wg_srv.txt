@@ -4,6 +4,6 @@ PrivateKey = ${server_privkey}
 Address = ${address}/${mask}
 ListenPort = ${server_port}
 
-PostUp = iptables -A POSTROUTING -t nat -s 192.168.0.0/${mask} -j MASQUERADE
+PostUp = iptables -A FORWARD -i wg-srv -j ACCEPT; iptables -A POSTROUTING -t nat -s 192.168.0.0/${mask} -o eth0 -j MASQUERADE
 
-PreDown = iptables -D POSTROUTING -t nat -s 192.168.0.0/${mask} -j MASQUERADE
+PreDown = iptables -D FORWARD -i wg-srv -j ACCEPT; iptables -D POSTROUTING -t nat -s 192.168.0.0/${mask} -o eth0 -j MASQUERADE
