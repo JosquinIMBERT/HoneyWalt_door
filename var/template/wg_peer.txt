@@ -1,0 +1,3 @@
+[Peer]
+PublicKey = ${pubkey}
+AllowedIPs = ${address}/${mask}
