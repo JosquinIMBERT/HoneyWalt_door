@@ -1,5 +1,6 @@
 # External
 from python_wireguard import ClientConnection, Key, Server, wireguard
+from string import Template
 import sys, os, time
 
 # Internal
@@ -8,10 +9,12 @@ from common.utils.logs import *
 from common.utils.system import *
 from common.utils.rpc import *
 
-global WG_DOOR_PORT, WG_DOOR_IP, WG_PEER_IP, WG_PEER_MASK
+global WG_DOOR_PORT, WG_DOOR_IP, WG_PEER_IP, WG_PEER_MASK, CONF_PATH
 WG_DOOR_PORT = 51820
-WG_DOOR_IP = "192.168.0.254/16"
-WG_PEER_IP = "192.168."
+WG_DOOR_IP	 = "192.168.0.254/16"
+WG_PEER_IP	 = "192.168."
+WG_PEER_MASK = "16"
+CONF_PATH	 = "/etc/wireguard/"
 
 class Wireguard:
 	"""Wireguard: manager for wireguard"""
@@ -32,7 +35,8 @@ class Wireguard:
 
 		with open(self.keyfile, "r") as wgkeyfile:
 			keys = json.loads(wgkeyfile.read())
-			self.privkey, self.pubkey = Key(keys["privkey"])
+			self.privkey = keys["privkey"]
+			self.pubkey = keys["pubkey"]
 
 		return True
 
@@ -41,49 +45,54 @@ class Wireguard:
 
 	# Set up wireguard interface
 	def up(self, client):
+		# Checking current state
 		if self.is_up():
-			log(WARNING, "Wireguard.up: the interface is already up. Trying to restart it")
-			if not self.down(client): return False
+			log(WARNING, "the interface is already up. Trying to restart it")
+			if not self.down(client):
+				log(WARNING, "failed to stop the wireguard server")
+				return False
 
+		# Removing old configuration files
+		for old_conf_file in os.listdir(CONF_PATH):
+			os.remove(os.path.join(CONF_PATH, old_conf_file))
+
+		# Loading Server Wireguard Keys
 		if not self.load_keys(client): return False
 
-		log(DEBUG, "Wireguard.up: building wireguard interface")
-		self.server = Server(self.name, self.privkey, WG_DOOR_IP, WG_DOOR_PORT)
+		# Loading configuration templates
+		with open(to_root_path("var/template/wg_srv.txt"), "r") as temp_file:
+			template_conf = Template(temp_file.read())
+		with open(to_root_path("var/template/wg_peer.txt"), "r") as temp_file:
+			template_peer = Template(temp_file.read())
 
-		log(DEBUG, "Wireguard.up: enabling wireguard server")
-		try:
-			self.server.enable()
-		except Exception as err:
-			log(ERROR, "Wireguard.up:", err)
-			client.log(ERROR, "failed to enable wireguard server")
-			return None
+		conf_filename = os.path.join(CONF_PATH, self.name+".conf")
 
-		# Add peers
+		# Creating configuration
+		config = template_conf.substitute({
+			"name": self.name,
+			"server_privkey": self.privkey,
+			"address": WG_DOOR_IP,
+			"mask": WG_PEER_MASK,
+			"server_port": WG_DOOR_PORT
+		})
+
 		for peer in self.peers:
-			log(DEBUG, "Wireguard.up: adding peer (key: "+peer["key"]+" IP: "+peer["ip"]+")")
-			self.server.add_client(ClientConnection(Key(peer["key"]), peer["ip"]))
+			peer_config = template_peer.substitute({
+				"pubkey": peer["key"],
+				"address": peer["ip"],
+				"mask": WG_PEER_MASK
+			})
+			config += "\n" + peer_config
 
-		self.post_up(client)
+		# Writing the configuration file
+		with open(conf_filename, "w") as conf_file:
+			conf_file.write(config)
+
+		# Run 'wg-quick up'
+		cmd = "wg-quick up "+conf_filename
+		run(cmd)
 
 		return True
-
-	# Exeuted after up
-	def post_up(self, client):
-		if not run("iptables -A POSTROUTING -t nat -s 192.168.0.0/16 -j MASQUERADE"):
-			log(ERROR, "Wireguard.post_up: failed to start wireguard packets masquerade")
-			client.log(ERROR, "failed to start wireguard packets masquerade")
-			return False
-		else:
-			return True
-
-	# Executed before down
-	def pre_down(self, client):
-		if not run("iptables -D POSTROUTING -t nat -s 192.168.0.0/16 -j MASQUERADE"):
-			log(ERROR, "Wireguard.pre_down: failed to stop wireguard packets masquerade")
-			client.log(ERROR, "failed to stop wireguard packets masquerade")
-			return None
-		else:
-			return True
 
 	# Set down wireguard interface
 	def down(self, client):
@@ -91,13 +100,11 @@ class Wireguard:
 			client.log(INFO, "the wireguard interface is already down")
 			return None
 		else:
-			if not self.load_keys(client): return False
+			conf_filename = os.path.join(CONF_PATH, self.name+".conf")
 
-			self.pre_down(client)
-
-			if self.server is None:
-				self.server = Server(self.name, self.privkey, WG_DOOR_IP, WG_DOOR_PORT)
-			self.server.delete_interface()
+			# Run 'wg-quick down'
+			cmd = "wg-quick down "+conf_filename
+			run(cmd)
 
 			return True
 
@@ -106,12 +113,14 @@ class Wireguard:
 		res = {}
 
 		self.privkey, self.pubkey = Key.key_pair()
+		self.privkey = str(self.privkey)
+		self.pubkey = str(self.pubkey)
 
-		res["privkey"] = str(self.privkey)
-		res["pubkey"]  = str(self.pubkey)
+		res["privkey"] = self.privkey
+		res["pubkey"]  = self.pubkey
 
 		with open(self.keyfile, "w") as wgkeyfile:
-			wgkeyfile.write(json.dumps({"privkey":str(self.privkey), "pubkey":str(self.pubkey)}))
+			wgkeyfile.write(json.dumps({"privkey":self.privkey, "pubkey":self.pubkey}))
 
 		return res
 
