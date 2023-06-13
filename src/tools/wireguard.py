@@ -13,7 +13,7 @@ global WG_DOOR_PORT, WG_DOOR_IP, WG_PEER_IP, WG_PEER_MASK, CONF_PATH
 WG_DOOR_PORT = 51820
 WG_DOOR_IP	 = "192.168.0.254"
 WG_PEER_IP	 = "192.168."
-WG_PEER_MASK = "16"
+WG_PEER_MASK = "24"
 CONF_PATH	 = "/etc/wireguard/"
 
 class Wireguard:
@@ -41,7 +41,12 @@ class Wireguard:
 		return True
 
 	def generate_ip(self, dev_id):
-		return WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
+		if WG_PEER_MASK == "16":
+			return WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
+		elif WG_PEER_MASK=="24":
+			return WG_PEER_IP+"0."+str((dev_id%255)+1)
+		else:
+			return None
 
 	# Set up wireguard interface
 	def up(self, client):
