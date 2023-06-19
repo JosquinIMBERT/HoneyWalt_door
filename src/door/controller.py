@@ -59,7 +59,7 @@ class DoorService(AbstractService):
 		return self.call(glob.SERVER.WIREGUARD.add_peer, pubkey, ident)
 
 	def exposed_traffic_shaper_up(self):
-		glob.TRAFFIC_SHAPER.set_peer(self.conn.root)
+		glob.SERVER.TRAFFIC_SHAPER.set_peer(self.conn.root)
 		return self.call(glob.SERVER.TRAFFIC_SHAPER.up)
 
 	def exposed_traffic_shaper_down(self):
