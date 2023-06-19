@@ -40,7 +40,7 @@ class DoorServer:
 
 		try:
 			log(INFO, "DoorServer.stop: stopping the traffic shaper")
-			self.TRAFFIC_SHAPER.down(fake_client)
+			self.TRAFFIC_SHAPER.stop()
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 
