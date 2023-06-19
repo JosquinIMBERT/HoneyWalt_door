@@ -60,10 +60,10 @@ class DoorService(AbstractService):
 
 	def exposed_traffic_shaper_up(self):
 		glob.SERVER.TRAFFIC_SHAPER.set_peer(self.conn.root)
-		return self.call(glob.SERVER.TRAFFIC_SHAPER.start)
+		return self.call(glob.SERVER.TRAFFIC_SHAPER.start, ignore_client=True)
 
 	def exposed_traffic_shaper_down(self):
-		return self.call(glob.SERVER.TRAFFIC_SHAPER.stop)
+		return self.call(glob.SERVER.TRAFFIC_SHAPER.stop, ignore_client=True)
 
 	def exposed_forward(self, packet):
-		return self.call(glob.SERVER.TRAFFIC_SHAPER.forward, packet)
+		return self.call(glob.SERVER.TRAFFIC_SHAPER.forward, packet, ignore_client=True)
