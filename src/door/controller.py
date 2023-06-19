@@ -65,5 +65,5 @@ class DoorService(AbstractService):
 	def exposed_traffic_shaper_down(self):
 		return self.call(glob.SERVER.TRAFFIC_SHAPER.stop)
 
-	def exposed_forward_wg_packet(self, packet):
+	def exposed_forward(self, packet):
 		return self.call(glob.SERVER.TRAFFIC_SHAPER.forward, packet)
