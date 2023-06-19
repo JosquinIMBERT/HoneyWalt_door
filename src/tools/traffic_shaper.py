@@ -7,6 +7,7 @@ if __name__ == "__main__":
 # Internal
 from common.utils.logs import *
 from common.utils.rpc import *
+from common.utils.shaper import Shaper
 import glob
 
 def encode_len(bytes_obj):
@@ -55,25 +56,21 @@ class TrafficShaper:
 	def listen(self):
 		self.listen_sock.listen(1)
 		while self.keep_running:
-			try:
+			l, _, _ = select.select([self.listen_sock], [], [], 5)
+			if len(l)>0:
 				self.tcp_sock, addr = self.listen_sock.accept()
-				self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 				self.run()
-			except socket.timeout:
-				pass
-			except Exception as err:
-				log(INFO, "TrafficShaper.listen: an unknown error occured when waiting for the controller to connect")
-				log(ERROR, err)
-			else:
-				log(INFO, "TrafficShaper.listen: door socket listening thread was interrupted")
 
 	def run(self):
+		self.udp_sock.setblocking(0)
+		self.tcp_sock.setblocking(0)
 		sel_list = [self.udp_sock, self.tcp_sock]
 		try:
 			connected = True
 			while self.keep_running and connected:
 				rready, _, _ = select.select(sel_list, [], [], 5)
 				for ready in rready:
+					if not self.keep_running: break
 					if ready is self.udp_sock:
 						if not self.recv_udp():
 							connected = False
@@ -82,9 +79,6 @@ class TrafficShaper:
 						if not self.recv_tcp():
 							connected = False
 							break
-					else:
-						# A timeout was reached
-						continue
 		except ConnectionResetError:
 			log(WARNING, "TrafficShaper.run: traffic shaper connection reset")
 
@@ -112,6 +106,17 @@ class TrafficShaper:
 			self.udp_sock.sendto(to_send, (self.udp_host, self.udp_port))
 		
 		return True
+
+class DoorShaper(Shaper):
+	def __init__(self, udp_host="127.0.0.1", udp_port=51820, timeout=5):
+		super().__init__(name="DOOR", timeout=timeout)
+
+		# Where we will connect to with UDP
+		self.udp_host = udp_host
+		self.udp_port = udp_port
+
+	def prepare(self):
+		self.sock.setblocking(0)
 
 if __name__ == "__main__":
 	import argparse

@@ -1,88 +1,69 @@
 # External
-import signal, threading
+import ssl
+from rpyc.utils.server import ThreadedServer
+from rpyc.utils.authenticators import SSLAuthenticator
 
 # Internal
-from common.door.proto import *
-from common.utils.controller import Controller
-from common.utils.logs import *
-from common.utils.sockets import ServerSocket
 import glob
+from common.door.proto import *
+from common.utils.files import *
+from common.utils.logs import *
+from common.utils.rpc import AbstractService
 
-class DoorController(Controller):
+class DoorController():
 	def __init__(self):
-		Controller.__init__(self)
-		log(INFO, self.get_name()+".__init__: creating DoorController")
-		self.socket = ServerSocket(DOOR_PORT)
-		self.socket.set_name("Socket(Door-Controller)")
-		self.keep_running = False
+		log(INFO, "Creating the DoorController")
 
 	def __del__(self):
-		del self.socket
+		log(INFO, "Deleting the DoorController")
 
-	def connect(self):
-		self.socket.bind()
-
-	def reconnect(self):
-		return self.socket.accept()
+	def start(self):
+		authenticator = SSLAuthenticator(
+			to_root_path("var/key/pki/private/server.key"),
+			to_root_path("var/key/pki/server.crt"),
+			ca_certs=to_root_path("var/key/pki/ca.crt"),
+			cert_reqs=ssl.CERT_REQUIRED,
+			ssl_version=ssl.PROTOCOL_TLS
+		)
+		self.service_thread = ThreadedServer(DoorService, port=DOOR_PORT, authenticator=authenticator)
+		self.service_thread.start()
 
 	def stop(self):
-		self.keep_running = False
+		self.service_thread.close()
 
-	def handler(self, signum, frame):
-		log(DEBUG, "DoorController.handler: "+threading.current_thread().name)
-		self.keep_running = False
-		raise KeyboardInterrupt
 
-	def run(self):
-		self.keep_running = True
-		while self.keep_running:
-			signal.signal(signal.SIGINT, self.handler)
-			accepted = self.socket.accept()
-			signal.signal(signal.SIGINT, signal.SIG_IGN)
-			if accepted:
-				disconnected = False
-				while self.keep_running and not disconnected:
-					cmd = self.socket.recv_cmd()
-					if not cmd:
-						disconnected = True
-					else:
-						self.execute(cmd)
-				if disconnected:
-					log(INFO, "DoorController.run: Client disconnected")
 
-	def execute(self, cmd):
-		if cmd == CMD_DOOR_FIREWALL_UP:
-			log(INFO, "DoorController.execute: setting firewall up")
-			self.exec(glob.SERVER.FIREWALL.up, self.socket.remaddr[0])
-		elif cmd == CMD_DOOR_FIREWALL_DOWN:
-			log(INFO, "DoorController.execute: setting firewall down")
-			self.exec(glob.SERVER.FIREWALL.down)
-		elif cmd == CMD_DOOR_WG_KEYGEN:
-			log(INFO, "DoorController.execute: generating wireguard keys")
-			self.exec(glob.SERVER.WIREGUARD.keygen)
-		elif cmd == CMD_DOOR_WG_UP:
-			log(INFO, "DoorController.execute: setting wireguard up")
-			self.exec(glob.SERVER.WIREGUARD.up)
-		elif cmd == CMD_DOOR_WG_DOWN:
-			log(INFO, "DoorController.execute: setting wireguard down")
-			self.exec(glob.SERVER.WIREGUARD.down)
-		elif cmd == CMD_DOOR_WG_RESET:
-			log(INFO, "DoorController.execute: reset peers")
-			self.exec(glob.SERVER.WIREGUARD.reset_peers)
-		elif cmd == CMD_DOOR_WG_ADD_PEER:
-			log(INFO, "DoorController.execute: adding wireguard peer")
-			args = self.socket.recv_obj()
-			self.exec(glob.SERVER.WIREGUARD.add_peer, args["pubkey"], args["id"])
-		elif cmd == CMD_DOOR_TRAFFIC_SHAPER_UP:
-			log(INFO, "DoorController.execute: setting traffic shaper up")
-			self.exec(glob.SERVER.TRAFFIC_SHAPER.up)
-		elif cmd == CMD_DOOR_TRAFFIC_SHAPER_DOWN:
-			log(INFO, "DoorController.execute: setting traffic shaper down")
-			self.exec(glob.SERVER.TRAFFIC_SHAPER.down)
-		elif cmd == CMD_DOOR_LIVE:
-			log(INFO, "DoorController.execute: answering LIVE query")
-			self.socket.send_obj({"success": True})
-		else:
-			log(WARNING, "DoorController.execute: received invalid command")
-			res = {"success": False, ERROR: ["unknown command"]}
-			self.socket.send_obj(res)
+class DoorService(AbstractService):
+	def __init__(self):
+		AbstractService.__init__(self)
+
+	def exposed_firewall_up(self):
+		return self.call(glob.SERVER.FIREWALL.up, self.remote_ip)
+
+	def exposed_firewall_down(self):
+		return self.call(glob.SERVER.FIREWALL.down)
+
+	def exposed_wg_keygen(self):
+		return self.call(glob.SERVER.WIREGUARD.keygen)
+
+	def exposed_wg_up(self):
+		return self.call(glob.SERVER.WIREGUARD.up)
+
+	def exposed_wg_down(self):
+		return self.call(glob.SERVER.WIREGUARD.down)
+
+	def exposed_wg_reset(self):
+		return self.call(glob.SERVER.WIREGUARD.reset_peers)
+
+	def exposed_wg_add_peer(self, pubkey, ident):
+		return self.call(glob.SERVER.WIREGUARD.add_peer, pubkey, ident)
+
+	def exposed_traffic_shaper_up(self):
+		glob.TRAFFIC_SHAPER.set_peer(self.conn.root)
+		return self.call(glob.SERVER.TRAFFIC_SHAPER.up)
+
+	def exposed_traffic_shaper_down(self):
+		return self.call(glob.SERVER.TRAFFIC_SHAPER.down)
+
+	def exposed_forward_wg_packet(self, packet):
+		return self.call(glob.SERVER.TRAFFIC_SHAPER.forward, packet)
