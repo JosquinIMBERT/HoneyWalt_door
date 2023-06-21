@@ -33,8 +33,8 @@ class DoorController():
 		self.threaded_server.start()
 
 	def stop(self):
-		self.threaded_server.close()
-		self.service_thread.join()
+		if self.threaded_server is not None: self.threaded_server.close()
+		if self.service_thread is not None: self.service_thread.join()
 
 
 
