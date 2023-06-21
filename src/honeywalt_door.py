@@ -56,9 +56,6 @@ class DoorServer:
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 
-		sys.exit(0)
-
-
 	def start(self):
 		log(INFO, "DoorServer.start: starting the controller")
 		self.DOOR_CONTROLLER.start()
