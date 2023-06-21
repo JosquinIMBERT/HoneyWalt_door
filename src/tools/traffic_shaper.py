@@ -116,7 +116,7 @@ class DoorShaper(Shaper):
 		self.udp_port = udp_port
 
 	def prepare(self):
-		self.sock.setblocking(0)
+		pass
 
 if __name__ == "__main__":
 	import argparse
