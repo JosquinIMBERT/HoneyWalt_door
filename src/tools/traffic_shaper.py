@@ -108,7 +108,7 @@ class TrafficShaper:
 		return True
 
 class DoorShaper(Shaper):
-	def __init__(self, udp_host="127.0.0.1", udp_port=51820, timeout=5):
+	def __init__(self, udp_host="127.0.0.1", udp_port=51820, timeout=60):
 		super().__init__(name="DOOR", timeout=timeout)
 
 		# Where we will connect to with UDP
