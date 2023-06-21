@@ -1,5 +1,5 @@
 # External
-import ssl
+import ssl, threading
 from rpyc.utils.server import ThreadedServer
 from rpyc.utils.authenticators import SSLAuthenticator
 
@@ -25,11 +25,16 @@ class DoorController():
 			cert_reqs=ssl.CERT_REQUIRED,
 			ssl_version=ssl.PROTOCOL_TLS
 		)
-		self.service_thread = ThreadedServer(DoorService, port=DOOR_PORT, authenticator=authenticator)
+		self.threaded_server = ThreadedServer(DoorService, port=DOOR_PORT, authenticator=authenticator)
+		self.service_thread = threading.Thread(target=self.run)
 		self.service_thread.start()
 
+	def run(self):
+		self.threaded_server.start()
+
 	def stop(self):
-		self.service_thread.close()
+		self.threaded_server.close()
+		self.service_thread.join()
 
 
 
