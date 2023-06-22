@@ -1,5 +1,6 @@
 [Interface]
 # Name = ${name}
+MTU = 1200
 PrivateKey = ${server_privkey}
 Address = ${address}/${mask}
 ListenPort = ${server_port}
