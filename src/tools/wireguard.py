@@ -1,7 +1,7 @@
 # External
 from python_wireguard import ClientConnection, Key, Server, wireguard
 from string import Template
-import sys, os, time
+import json, sys, os, time
 
 # Internal
 from common.utils.files import *
