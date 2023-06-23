@@ -5,7 +5,7 @@ import argparse, signal, sys, threading
 from door.controller import DoorController
 import glob
 from tools.firewall import Firewall
-from tools.traffic_shaper import DoorShaper
+from tools.shaper import DoorShaper
 from tools.wireguard import Wireguard
 from common.utils.files import *
 from common.utils.logs import *
