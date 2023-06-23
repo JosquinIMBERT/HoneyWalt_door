@@ -4,15 +4,16 @@ from rpyc.utils.server import ThreadedServer
 from rpyc.utils.authenticators import SSLAuthenticator
 
 # Internal
-import glob
 from common.door.proto import *
 from common.utils.files import *
 from common.utils.logs import *
 from common.utils.rpc import AbstractService
 
 class DoorController():
-	def __init__(self):
+	def __init__(self, server):
 		log(INFO, "Creating the DoorController")
+
+		self.server = server
 
 	def __del__(self):
 		log(INFO, "Deleting the DoorController")
@@ -43,32 +44,44 @@ class DoorService(AbstractService):
 		AbstractService.__init__(self)
 
 	def exposed_firewall_up(self):
-		return self.call(glob.SERVER.FIREWALL.up, self.remote_ip)
+		return self.call(self.server.firewall.up, self.remote_ip)
 
 	def exposed_firewall_down(self):
-		return self.call(glob.SERVER.FIREWALL.down)
+		return self.call(self.server.firewall.down)
 
 	def exposed_wg_keygen(self):
-		return self.call(glob.SERVER.WIREGUARD.keygen)
+		return self.call(self.server.wireguard.keygen)
 
 	def exposed_wg_up(self):
-		return self.call(glob.SERVER.WIREGUARD.up)
+		return self.call(self.server.wireguard.up)
 
 	def exposed_wg_down(self):
-		return self.call(glob.SERVER.WIREGUARD.down)
+		return self.call(self.server.wireguard.down)
 
 	def exposed_wg_reset(self):
-		return self.call(glob.SERVER.WIREGUARD.reset_peers)
+		return self.call(self.server.wireguard.reset_peers)
 
 	def exposed_wg_add_peer(self, pubkey, ident):
-		return self.call(glob.SERVER.WIREGUARD.add_peer, pubkey, ident)
+		return self.call(self.server.wireguard.add_peer, pubkey, ident)
 
 	def exposed_traffic_shaper_up(self):
-		glob.SERVER.TRAFFIC_SHAPER.set_peer(self.conn.root)
-		return self.call(glob.SERVER.TRAFFIC_SHAPER.start, ignore_client=True)
+		self.server.shaper.set_peer(self.conn.root)
+		return self.call(self.server.shaper.start, ignore_client=True)
 
 	def exposed_traffic_shaper_down(self):
-		return self.call(glob.SERVER.TRAFFIC_SHAPER.stop, ignore_client=True)
+		return self.call(self.server.shaper.stop, ignore_client=True)
 
 	def exposed_forward(self, packet):
-		return self.call(glob.SERVER.TRAFFIC_SHAPER.forward, packet, ignore_client=True)
+		return self.call(self.server.shaper.forward, packet, ignore_client=True)
+
+	def exposed_cowrie_configure(self):
+		return self.call(self.server.cowrie.configure) #TODO: add parameters
+
+	def exposed_cowrie_start(self):
+		return self.call(self.server.cowrie.start)
+
+	def exposed_cowrie_stop(self):
+		return self.call(self.server.cowrie.stop)
+
+	def exposed_cowrie_is_running(self):
+		return self.call(self.server.cowrie.is_running)

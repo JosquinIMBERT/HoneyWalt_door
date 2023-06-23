@@ -1,32 +1,41 @@
 # External
-import argparse, signal, sys, threading
+import argparse, signal
 
 # Internal
 from door.controller import DoorController
-import glob
+from tools.cowrie import Cowrie
 from tools.firewall import Firewall
 from tools.shaper import DoorShaper
 from tools.wireguard import Wireguard
-from common.utils.files import *
+
 from common.utils.logs import *
 from common.utils.rpc import *
 
+server = None
+
 def terminate(signume, frame):
-	glob.SERVER.stop()
+	global server
+	if server is not None:
+		server.stop()
 
 class DoorServer:
 	"""DoorServer"""
 	def __init__(self):
-		# Getting controller IP
-		glob.init(self)
-		log(INFO, "DoorServer.__init__: building the firewall manager")
-		self.FIREWALL = Firewall()
-		log(INFO, "DoorServer.__init__: building the door controller")
-		self.DOOR_CONTROLLER = DoorController()
-		log(INFO, "DoorServer.__init__: building the traffic shaper")
-		self.TRAFFIC_SHAPER = DoorShaper()
-		log(INFO, "DoorServer.__init__: building the wireguard manager")
-		self.WIREGUARD = Wireguard()
+		log(INFO, "DoorServer: building the cowrie manager")
+		self.cowrie = Cowrie(self)
+		
+		log(INFO, "DoorServer: building the firewall manager")
+		self.firewall = Firewall(self)
+		
+		log(INFO, "DoorServer: building the door controller")
+		self.door = DoorController(self)
+		
+		log(INFO, "DoorServer: building the traffic shaper")
+		self.shaper = DoorShaper(self)
+		
+		log(INFO, "DoorServer: building the wireguard manager")
+		self.wireguard = Wireguard(self)
+		
 		signal.signal(signal.SIGINT, terminate)
 		signal.signal(signal.SIGTERM, terminate)
 	
@@ -34,33 +43,35 @@ class DoorServer:
 		fake_client = FakeClient()
 		try:
 			log(INFO, "DoorServer.stop: stopping wireguard")
-			self.WIREGUARD.down(fake_client)
+			self.wireguard.down(fake_client)
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 
 		try:
 			log(INFO, "DoorServer.stop: stopping the traffic shaper")
-			self.TRAFFIC_SHAPER.stop()
+			self.shaper.stop()
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 
 		try:
 			log(INFO, "DoorServer.stop: stopping the door controller")
-			self.DOOR_CONTROLLER.stop()
+			self.door.stop()
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 
 		try:
 			log(INFO, "DoorServer.stop: stopping the firewall")
-			self.FIREWALL.down(fake_client)
+			self.firewall.down(fake_client)
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 
 	def start(self):
 		log(INFO, "DoorServer.start: starting the controller")
-		self.DOOR_CONTROLLER.start()
+		self.door.start()
 
-if __name__ == '__main__':
+def main()
+	global server
+
 	parser = argparse.ArgumentParser(description='HoneyWalt Door Daemon')
 	parser.add_argument("-l", "--log-level", nargs=1, help="Set log level (COMMAND, DEBUG, INFO, WARNING, ERROR, FATAL)")
 
@@ -69,7 +80,8 @@ if __name__ == '__main__':
 		log_level = options.log_level[0]
 		set_log_level(log_level)
 
-	#threading.current_thread().name = "MainThread"
+	server = DoorServer()
+	server.start()
 
-	door_server = DoorServer()
-	door_server.start()
+if __name__ == '__main__':
+	main()

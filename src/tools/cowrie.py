@@ -8,9 +8,12 @@ from common.utils.logs import *
 from common.utils.system import *
 from common.utils.misc import *
 
-class CowrieController:
-	def __init__(self):
-		log(INFO, "CowrieController.__init__: creating the CowrieController")
+class Cowrie:
+	def __init__(self, server):
+		log(INFO, "Cowrie: creating the Cowrie")
+		
+		self.server = server
+
 		self.run_dir       = to_root_path("run/cowrie/")
 		self.pid_file      = to_root_path(self.run_dir+"/cowrie.pid")
 		self.log_file      = to_root_path(self.run_dir+"/cowrie.log")
@@ -29,6 +32,7 @@ class CowrieController:
 	def __del__(self):
 		pass
 
+	# Generate Cowrie Configuration
 	def configure(self, honeypot, hpfeeds, settings):
 		# Settings
 		COWRIE_SSH_LISTEN_PORT  = settings["cowrie"]["ssh_listen_port"]
@@ -71,7 +75,9 @@ class CowrieController:
 		run("chown -R cowrie "+to_root_path("run/cowrie/"))
 
 	def start(self):
-		if self.is_running(): self.stop()
+		if self.is_running():
+			log(INFO, "Cowrie.start: already running - trying to stop first")
+			self.stop()
 
 		self.prepare()
 
@@ -82,13 +88,13 @@ class CowrieController:
 		})
 
 		if not run(cmd):
-			log(ERROR, "CowrieController.start: failed")
+			log(ERROR, "Cowrie.start: failed")
 
 	def stop(self):
 		try:
 			kill_from_file(os.path.join(path, pidpath))
 		except:
-			log(WARNING, "Failed to stop a cowrie instance. The pid file is: "+str(pidpath))
+			log(WARNING, "Cowrie.stop: failed - the pid file is: "+str(pidpath))
 			return False
 		else:
 			return True

@@ -9,16 +9,18 @@ from common.utils.logs import *
 from common.utils.system import *
 from common.utils.rpc import *
 
-global WG_DOOR_PORT, WG_DOOR_IP, WG_PEER_IP, WG_PEER_MASK, CONF_PATH
-WG_DOOR_PORT = 51820
-WG_DOOR_IP	 = "192.168.0.254"
-WG_PEER_IP	 = "192.168."
-WG_PEER_MASK = "24"
-CONF_PATH	 = "/etc/wireguard/"
-
 class Wireguard:
 	"""Wireguard: manager for wireguard"""
-	def __init__(self):
+
+	WG_DOOR_PORT = 51820
+	WG_DOOR_IP	 = "192.168.0.254"
+	WG_PEER_IP	 = "192.168."
+	WG_PEER_MASK = "24"
+	CONF_PATH	 = "/etc/wireguard/"
+
+	def __init__(self, server):
+		self.server = server
+		
 		self.privkey = None
 		self.pubkey = None
 		self.server = None
@@ -41,10 +43,10 @@ class Wireguard:
 		return True
 
 	def generate_ip(self, dev_id):
-		if WG_PEER_MASK == "16":
-			return WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
-		elif WG_PEER_MASK=="24":
-			return WG_PEER_IP+"0."+str((dev_id%255)+1)
+		if Wireguard.WG_PEER_MASK == "16":
+			return Wireguard.WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
+		elif Wireguard.WG_PEER_MASK=="24":
+			return Wireguard.WG_PEER_IP+"0."+str((dev_id%255)+1)
 		else:
 			return None
 
@@ -58,8 +60,8 @@ class Wireguard:
 				return False
 
 		# Removing old configuration files
-		for old_conf_file in os.listdir(CONF_PATH):
-			os.remove(os.path.join(CONF_PATH, old_conf_file))
+		for old_conf_file in os.listdir(Wireguard.CONF_PATH):
+			os.remove(os.path.join(Wireguard.CONF_PATH, old_conf_file))
 
 		# Loading Server Wireguard Keys
 		if not self.load_keys(client): return False
@@ -70,15 +72,15 @@ class Wireguard:
 		with open(to_root_path("var/template/wg_peer.txt"), "r") as temp_file:
 			template_peer = Template(temp_file.read())
 
-		conf_filename = os.path.join(CONF_PATH, self.name+".conf")
+		conf_filename = os.path.join(Wireguard.CONF_PATH, self.name+".conf")
 
 		# Creating configuration
 		config = template_conf.substitute({
 			"name": self.name,
 			"server_privkey": self.privkey,
-			"address": WG_DOOR_IP,
-			"mask": WG_PEER_MASK,
-			"server_port": WG_DOOR_PORT
+			"address": Wireguard.WG_DOOR_IP,
+			"mask": Wireguard.WG_PEER_MASK,
+			"server_port": Wireguard.WG_DOOR_PORT
 		})
 
 		for peer in self.peers:
@@ -105,7 +107,7 @@ class Wireguard:
 			client.log(INFO, "the wireguard interface is already down")
 			return None
 		else:
-			conf_filename = os.path.join(CONF_PATH, self.name+".conf")
+			conf_filename = os.path.join(Wireguard.CONF_PATH, self.name+".conf")
 
 			# Run 'wg-quick down'
 			cmd = "wg-quick down "+conf_filename
