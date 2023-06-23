@@ -7,7 +7,6 @@ import sys, os, time
 from common.utils.files import *
 from common.utils.logs import *
 from common.utils.system import *
-from common.utils.rpc import *
 
 class Wireguard:
 	"""Wireguard: manager for wireguard"""
@@ -27,7 +26,7 @@ class Wireguard:
 		self.peers = []
 		self.name = "wg-srv"
 		self.keyfile = to_root_path("var/key/wireguard.json")
-		self.load_keys(FakeClient(ignore_logs=True))
+		self.load_keys()
 
 	def load_keys(self):
 		if not os.path.isfile(self.keyfile):
