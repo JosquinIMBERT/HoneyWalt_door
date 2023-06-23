@@ -69,7 +69,7 @@ class DoorServer:
 		log(INFO, "DoorServer.start: starting the controller")
 		self.door.start()
 
-def main()
+def main():
 	global server
 
 	parser = argparse.ArgumentParser(description='HoneyWalt Door Daemon')
