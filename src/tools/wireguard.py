@@ -31,8 +31,7 @@ class Wireguard:
 
 	def load_keys(self, client):
 		if not os.path.isfile(self.keyfile):
-			log(ERROR, "Failed to load wireguard keys.")
-			client.log(ERROR, "Failed to load wireguard keys.")
+			log(ERROR, "Wireguard.load_keys: failed")
 			return False
 
 		with open(self.keyfile, "r") as wgkeyfile:
@@ -54,9 +53,9 @@ class Wireguard:
 	def up(self, client):
 		# Checking current state
 		if self.is_up():
-			log(WARNING, "the interface is already up. Trying to restart it")
+			log(WARNING, "Wireguard.up: already up - trying to stop it first")
 			if not self.down(client):
-				log(WARNING, "failed to stop the wireguard server")
+				log(WARNING, "Wireguard.up: failed to stop the wireguard server")
 				return False
 
 		# Removing old configuration files
@@ -104,7 +103,7 @@ class Wireguard:
 	# Set down wireguard interface
 	def down(self, client):
 		if not self.is_up():
-			client.log(INFO, "the wireguard interface is already down")
+			log(INFO, "Wireguard.down: already down")
 			return None
 		else:
 			conf_filename = os.path.join(Wireguard.CONF_PATH, self.name+".conf")

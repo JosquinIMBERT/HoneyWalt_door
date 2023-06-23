@@ -14,7 +14,7 @@ class DoorController():
 		self.server = server
 
 	def __del__(self):
-		log(INFO, "Deleting the DoorController")
+		log(DEBUG, "DoorController: deleting")
 
 	def start(self):
 		authenticator = SSLAuthenticator(
