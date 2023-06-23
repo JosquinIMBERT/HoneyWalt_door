@@ -9,7 +9,6 @@ from tools.shaper import DoorShaper
 from tools.wireguard import Wireguard
 
 from common.utils.logs import *
-from common.utils.rpc import *
 
 server = None
 
@@ -40,10 +39,9 @@ class DoorServer:
 		signal.signal(signal.SIGTERM, terminate)
 	
 	def stop(self):
-		fake_client = FakeClient()
 		try:
 			log(INFO, "DoorServer.stop: stopping wireguard")
-			self.wireguard.down(fake_client)
+			self.wireguard.down()
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 
@@ -61,7 +59,7 @@ class DoorServer:
 
 		try:
 			log(INFO, "DoorServer.stop: stopping the firewall")
-			self.firewall.down(fake_client)
+			self.firewall.down()
 		except Exception as err:
 			log(ERROR, "DoorServer.stop:", err)
 

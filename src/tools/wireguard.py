@@ -29,7 +29,7 @@ class Wireguard:
 		self.keyfile = to_root_path("var/key/wireguard.json")
 		self.load_keys(FakeClient(ignore_logs=True))
 
-	def load_keys(self, client):
+	def load_keys(self):
 		if not os.path.isfile(self.keyfile):
 			log(ERROR, "Wireguard.load_keys: failed")
 			return False
@@ -50,11 +50,11 @@ class Wireguard:
 			return None
 
 	# Set up wireguard interface
-	def up(self, client):
+	def up(self):
 		# Checking current state
 		if self.is_up():
 			log(WARNING, "Wireguard.up: already up - trying to stop it first")
-			if not self.down(client):
+			if not self.down():
 				log(WARNING, "Wireguard.up: failed to stop the wireguard server")
 				return False
 
@@ -63,7 +63,7 @@ class Wireguard:
 			os.remove(os.path.join(Wireguard.CONF_PATH, old_conf_file))
 
 		# Loading Server Wireguard Keys
-		if not self.load_keys(client): return False
+		if not self.load_keys(): return False
 
 		# Loading configuration templates
 		with open(to_root_path("var/template/wg_srv.txt"), "r") as temp_file:
@@ -101,7 +101,7 @@ class Wireguard:
 		return True
 
 	# Set down wireguard interface
-	def down(self, client):
+	def down(self):
 		if not self.is_up():
 			log(INFO, "Wireguard.down: already down")
 			return None
@@ -115,7 +115,7 @@ class Wireguard:
 			return True
 
 	# Generate wireguard keys
-	def keygen(self, client):
+	def keygen(self):
 		res = {}
 
 		self.privkey, self.pubkey = Key.key_pair()
@@ -130,11 +130,11 @@ class Wireguard:
 
 		return res
 
-	def reset_peers(self, client):
+	def reset_peers(self):
 		self.peers = []
 
 	# Add a wireguard peer
-	def add_peer(self, client, key, dev_id):
+	def add_peer(self, key, dev_id):
 		self.peers += [{
 			"key":key,
 			"ip": self.generate_ip(dev_id)

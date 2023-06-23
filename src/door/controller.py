@@ -64,13 +64,13 @@ class DoorService(AbstractService):
 
 	def exposed_traffic_shaper_up(self):
 		self.server.shaper.set_peer(self.conn.root)
-		return self.call(self.server.shaper.start, ignore_client=True)
+		return self.call(self.server.shaper.start)
 
 	def exposed_traffic_shaper_down(self):
-		return self.call(self.server.shaper.stop, ignore_client=True)
+		return self.call(self.server.shaper.stop)
 
 	def exposed_forward(self, packet):
-		return self.call(self.server.shaper.forward, packet, ignore_client=True)
+		return self.call(self.server.shaper.forward, packet)
 
 	def exposed_cowrie_configure(self):
 		return self.call(self.server.cowrie.configure) #TODO: add parameters

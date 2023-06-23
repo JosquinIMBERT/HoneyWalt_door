@@ -7,14 +7,14 @@ class Firewall:
 	def __init__(self, server):
 		self.server = server
 
-	def up(self, client, ip):
+	def up(self, ip):
 		if not run(to_root_path("src/script/firewall-up.sh")+" "+ip):
 			log(WARNING, "Firewall.up: failed to start firewall")
 			return False
 		else:
 			return True
 
-	def down(self, client):
+	def down(self):
 		if not run(to_root_path("src/script/firewall-down.sh")):
 			log(WARNING, "Firewall.down: failed to stop firewall")
 			return False
