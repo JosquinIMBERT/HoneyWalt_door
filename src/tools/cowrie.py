@@ -13,92 +13,87 @@ import glob
 class CowrieController:
 	def __init__(self):
 		log(INFO, "CowrieController.__init__: creating the CowrieController")
+		self.run_dir       = to_root_path("run/cowrie/")
+		self.pid_file      = to_root_path(self.run_dir+"/cowrie.pid")
+		self.log_file      = to_root_path(self.run_dir+"/cowrie.log")
+		self.json_file     = to_root_path(self.run_dir+"/cowrie.json")
+		self.conf_file     = to_root_path(self.run_dir+"/cowrie.conf")
+		self.download_path = to_root_path(self.run_dir+"/download/")
+
+		self.conf_template  = ""
+		self.start_template = ""
+
+		with open(to_root_path("var/template/cowrie_conf.txt"), "r") as temp_file:
+			self.conf_template = Template(temp_file.read())
+		with open(to_root_path("var/template/start_cowrie.txt"), "r") as temp_file:
+			self.start_template = Template(temp_file.read())
 
 	def __del__(self):
 		pass
 
-	def delete_configurations(self):
-		delete(to_root_path("run/cowrie/conf"), suffix=".conf")
+	def configure(self, honeypot, hpfeeds, settings):
+		# Settings
+		COWRIE_SSH_LISTEN_PORT  = settings["cowrie"]["ssh_listen_port"]
+		COWRIE_BACKEND_SSH_HOST = settings["cowrie"]["backend_ssh_host"]
+		COWRIE_BACKEND_SSH_PORT = settings["cowrie"]["backend_ssh_port"]
+		SOCKET_PORTS            = settings["cowrie"]["socket_ports"]
 
-	def generate_configurations(self):
-		LISTEN_PORTS = settings.get("LISTEN_PORTS")
-		BACKEND_PORTS = settings.get("BACKEND_PORTS")
-		SOCKET_PORTS = settings.get("SOCKET_PORTS")
+		# Deleting former configuration
+		delete_file(self.conf_file)
 
-		self.delete_configurations()
+		cred  = honeypot["credentials"]
+		ident = honeypot["id"]
+
+		params = {
+			'download_path'      : self.download_path,
+			'listen_port'        : COWRIE_SSH_LISTEN_PORT,
+			'backend_host'       : COWRIE_BACKEND_SSH_HOST, #"127.0.0.1"
+			'backend_port'       : COWRIE_BACKEND_SSH_PORT+ident, #2000+i
+			'backend_user'       : cred["user"],
+			'backend_pass'       : cred["pass"],
+			'hpfeeds_server'     : hpfeeds["server"],
+			'hpfeeds_port'       : hpfeeds["port"],
+			'hpfeeds_identifier' : hpfeeds["identifier"],
+			'hpfeeds_secret'     : hpfeeds["secret"],
+			'logfile'            : self.json_file,
+			'socket_port'        : SOCKET_PORTS+ident
+		}
+
+		content = self.conf_template.substitute(params)
 		
-		i=0
-		with open(to_root_path("var/template/cowrie_conf.txt"), "r") as temp_file:
-			temp = Template(temp_file.read())
-		for dev in glob.CONFIG["device"]:
-			img = find(glob.CONFIG["image"], dev["image"], "short_name")
-			if img is None:
-				log(WARNING, "image not found for device "+str(dev["node"]))
-			else:
-				backend_user = img["user"]
-				backend_pass = img["pass"]
-				download_path = to_root_path("run/cowrie/download/"+str(i)+"/")
-				if not exists(download_path):
-					os.mkdir(download_path)
-				params = {
-					'download_path'      : download_path,
-					'listen_port'        : COWRIE_SSH_LISTEN_PORT,
-					'backend_host'       : COWRIE_BACKEND_SSH_HOST,   #"127.0.0.1"
-					'backend_port'       : COWRIE_BACKEND_SSH_PORT+i, #2000+i
-					'backend_user'       : backend_user,
-					'backend_pass'       : backend_pass,
-					'hpfeeds_server'     : ,
-					'hpfeeds_port'       : ,
-					'hpfeeds_identifier' : ,
-					'hpfeeds_secret'     : ,
-					'logfile'            : to_root_path("run/cowrie/log/cowrie.json"),
-					'socket_port'        : SOCKET_PORTS+i
-				}
-				content = temp.substitute(params)
-				with open(to_root_path("run/cowrie/conf/"+str(i)+".conf"), "w") as conf_file:
-					conf_file.write(content)
-				i+=1
+		with open(self.conf_file, "w") as configuration_file:
+			configuration_file.write(content)
 
 	# Prepare cowrie to run
-	def init_run(self):
-		# Delete previous pid files
-		delete(to_root_path("run/cowrie/pid"), suffix=".pid")
+	def prepare(self):
+		# Delete previous pid file
+		delete(to_root_path("run/cowrie/"), suffix=".pid")
 
 		# Allow cowrie user to access cowrie files
-		if not run("chown -R cowrie "+to_root_path("run/cowrie/")):
-			log(ERROR, "CowrieController.init_run: failed chown cowrie")
+		run("chown -R cowrie "+to_root_path("run/cowrie/"))
 
-	def start_cowrie(self):
-		# TODO: try to start cowrie without a shell command
-		with open(to_root_path("var/template/start_cowrie.txt"), "r") as file:
-			template = Template(file.read())
-		for dev in glob.RUN_CONFIG["device"]:
-			cmd = template.substitute({
-				"conf_path": to_root_path("run/cowrie/conf/"+str(dev["id"])+".conf"),
-				"pid_path": to_root_path("run/cowrie/pid/"+str(dev["id"])+".pid"),
-				"log_path": to_root_path("run/cowrie/log/"+str(dev["id"])+".log")
-			})
-			if not run(cmd):
-				log(ERROR, "CowrieController.strat_cowrie: failed to start cowrie")
+	def start(self):
+		if self.is_running(): self.stop()
+
+		self.prepare()
+
+		cmd = self.start_template.substitute({
+			"conf_path" : self.conf_file,
+			"pid_path"  : self.pid_file,
+			"log_path"  : self.log_file
+		})
+
+		if not run(cmd):
+			log(ERROR, "CowrieController.start: failed")
 
 	def stop(self):
-		path = to_root_path("run/cowrie/pid")
-		for pidpath in os.listdir(path):
-			if pidpath.endswith(".pid"):
-				try:
-					kill_from_file(os.path.join(path, pidpath))
-				except:
-					log(WARNING, "Failed to stop a cowrie instance. The pid file is: "+str(pidpath))
+		try:
+			kill_from_file(os.path.join(path, pidpath))
+		except:
+			log(WARNING, "Failed to stop a cowrie instance. The pid file is: "+str(pidpath))
+			return False
+		else:
+			return True
 
-	def running_cowries(self):
-		# code from https://stackoverflow.com/questions/2632205/how-to-count-the-number-of-files-in-a-directory-using-python#2632251
-		DIR = to_root_path("run/cowrie/pid")
-		nb_pids = len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name)) and name.endswith(".pid") and read_pid_file(os.path.join(DIR, name))])
-		return nb_pids
-
-	# Listen the logs for a given device name
-	# Print the output to stdout
-	# This may be piped into another program that analyzes the logs from its standard input
-	def read_logs(self, dev):
-		device = find(glob.RUN_CONFIG, dev, "node")
-		run("nc -lp "+str(dev["id"]))
+	def is_running(self):
+		return read_pid_file(to_root_path("run/cowrie/cowrie.pid")) is not None
