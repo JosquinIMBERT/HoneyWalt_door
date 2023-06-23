@@ -9,9 +9,7 @@ from common.utils.system import *
 from common.utils.misc import *
 
 class Cowrie:
-	def __init__(self, server):
-		log(INFO, "Cowrie: creating the Cowrie")
-		
+	def __init__(self, server):		
 		self.server = server
 
 		self.run_dir       = to_root_path("run/cowrie/")

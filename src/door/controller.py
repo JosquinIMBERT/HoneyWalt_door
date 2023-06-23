@@ -11,8 +11,6 @@ from common.utils.rpc import AbstractService
 
 class DoorController():
 	def __init__(self, server):
-		log(INFO, "Creating the DoorController")
-
 		self.server = server
 
 	def __del__(self):
