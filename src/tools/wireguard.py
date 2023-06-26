@@ -23,7 +23,7 @@ class Wireguard:
 		self.privkey = None
 		self.pubkey = None
 		self.server = None
-		self.peers = []
+		self.peer = None
 		self.name = "wg-srv"
 
 	def load_keys(self):
@@ -71,13 +71,13 @@ class Wireguard:
 			"server_port": Wireguard.DOOR_PORT
 		})
 
-		for peer in self.peers:
-			peer_config = template_peer.substitute({
-				"pubkey": peer["key"],
-				"address": peer["ip"],
-				"mask": "32"
-			})
-			config += "\n" + peer_config
+		peer_config = template_peer.substitute({
+			"pubkey": self.peer["key"],
+			"address": self.peer["ip"],
+			"mask": "32"
+		})
+
+		config += "\n" + peer_config
 
 		# Writing the configuration file
 		with open(conf_filename, "w") as conf_file:
@@ -119,15 +119,15 @@ class Wireguard:
 
 		return res
 
-	def reset_peers(self):
-		self.peers = []
+	def reset_peer(self):
+		self.peer = None
 
 	# Add a wireguard peer
-	def add_peer(self, key):
-		self.peers += [{
+	def set_peer(self, key):
+		self.peer = {
 			"key":key,
 			"ip": self.generate_ip(self.server.config["honeypot"]["id"])
-		}]
+		}
 		self.server.config["honeypot"]["device"]["pubkey"] = key
 		return True
 
