@@ -11,10 +11,10 @@ from common.utils.system import *
 class Wireguard:
 	"""Wireguard: manager for wireguard"""
 
-	WG_DOOR_PORT = 51820
-	WG_DOOR_IP	 = "192.168.0.254"
-	WG_PEER_IP	 = "192.168."
-	WG_PEER_MASK = "24"
+	DOOR_PORT = 51820
+	DOOR_IP	 = "192.168.0.254"
+	PEER_IP	 = "192.168."
+	PEER_MASK = "24"
 	CONF_PATH	 = "/etc/wireguard/"
 
 	def __init__(self, server):
@@ -25,26 +25,16 @@ class Wireguard:
 		self.server = None
 		self.peers = []
 		self.name = "wg-srv"
-		self.keyfile = to_root_path("var/key/wireguard.json")
-		self.load_keys()
 
 	def load_keys(self):
-		if not os.path.isfile(self.keyfile):
-			log(ERROR, "Wireguard.load_keys: failed")
-			return False
-
-		with open(self.keyfile, "r") as wgkeyfile:
-			keys = json.loads(wgkeyfile.read())
-			self.privkey = keys["privkey"]
-			self.pubkey = keys["pubkey"]
-
-		return True
+		self.privkey = self.server.config["honeypot"]["door"]["privkey"]
+		self.pubkey = self.server.config["honeypot"]["door"]["pubkey"]
 
 	def generate_ip(self, dev_id):
-		if Wireguard.WG_PEER_MASK == "16":
-			return Wireguard.WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
-		elif Wireguard.WG_PEER_MASK=="24":
-			return Wireguard.WG_PEER_IP+"0."+str((dev_id%255)+1)
+		if Wireguard.PEER_MASK == "16":
+			return Wireguard.PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
+		elif Wireguard.PEER_MASK=="24":
+			return Wireguard.PEER_IP+"0."+str((dev_id%255)+1)
 		else:
 			return None
 
@@ -62,7 +52,7 @@ class Wireguard:
 			os.remove(os.path.join(Wireguard.CONF_PATH, old_conf_file))
 
 		# Loading Server Wireguard Keys
-		if not self.load_keys(): return False
+		self.load_keys()
 
 		# Loading configuration templates
 		with open(to_root_path("var/template/wg_srv.txt"), "r") as temp_file:
@@ -76,9 +66,9 @@ class Wireguard:
 		config = template_conf.substitute({
 			"name": self.name,
 			"server_privkey": self.privkey,
-			"address": Wireguard.WG_DOOR_IP,
-			"mask": Wireguard.WG_PEER_MASK,
-			"server_port": Wireguard.WG_DOOR_PORT
+			"address": Wireguard.DOOR_IP,
+			"mask": Wireguard.PEER_MASK,
+			"server_port": Wireguard.DOOR_PORT
 		})
 
 		for peer in self.peers:
@@ -124,8 +114,8 @@ class Wireguard:
 		res["privkey"] = self.privkey
 		res["pubkey"]  = self.pubkey
 
-		with open(self.keyfile, "w") as wgkeyfile:
-			wgkeyfile.write(json.dumps({"privkey":self.privkey, "pubkey":self.pubkey}))
+		self.server.config["honeypot"]["door"]["privkey"] = self.privkey
+		self.server.config["honeypot"]["door"]["pubkey"] = self.pubkey
 
 		return res
 
@@ -133,11 +123,12 @@ class Wireguard:
 		self.peers = []
 
 	# Add a wireguard peer
-	def add_peer(self, key, dev_id):
+	def add_peer(self, key):
 		self.peers += [{
 			"key":key,
-			"ip": self.generate_ip(dev_id)
+			"ip": self.generate_ip(self.server.config["honeypot"]["id"])
 		}]
+		self.server.config["honeypot"]["device"]["pubkey"] = key
 		return True
 
 	def is_up(self):

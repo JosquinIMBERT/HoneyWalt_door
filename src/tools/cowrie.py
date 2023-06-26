@@ -9,6 +9,12 @@ from common.utils.system import *
 from common.utils.misc import *
 
 class Cowrie:
+
+	SSH_LISTEN_PORT  = 22
+	BACKEND_SSH_PORT = 2000
+	BACKEND_SSH_HOST = "127.0.0.1"
+	SOCKET_PORTS     = 4000
+
 	def __init__(self, server):		
 		self.server = server
 
@@ -31,32 +37,23 @@ class Cowrie:
 		pass
 
 	# Generate Cowrie Configuration
-	def configure(self, honeypot, hpfeeds, settings):
-		# Settings
-		COWRIE_SSH_LISTEN_PORT  = settings["cowrie"]["ssh_listen_port"]
-		COWRIE_BACKEND_SSH_HOST = settings["cowrie"]["backend_ssh_host"]
-		COWRIE_BACKEND_SSH_PORT = settings["cowrie"]["backend_ssh_port"]
-		SOCKET_PORTS            = settings["cowrie"]["socket_ports"]
-
+	def configure(self, honeypot, hpfeeds):
 		# Deleting former configuration
 		delete_file(self.conf_file)
 
-		cred  = honeypot["credentials"]
-		ident = honeypot["id"]
-
 		params = {
 			'download_path'      : self.download_path,
-			'listen_port'        : COWRIE_SSH_LISTEN_PORT,
-			'backend_host'       : COWRIE_BACKEND_SSH_HOST, #"127.0.0.1"
-			'backend_port'       : COWRIE_BACKEND_SSH_PORT+ident, #2000+i
-			'backend_user'       : cred["user"],
-			'backend_pass'       : cred["pass"],
+			'listen_port'        : Cowrie.SSH_LISTEN_PORT,
+			'backend_host'       : Cowrie.BACKEND_SSH_HOST,
+			'backend_port'       : Cowrie.BACKEND_SSH_PORT + honeypot["id"],
+			'backend_user'       : honeypot["credentials"]["user"],
+			'backend_pass'       : honeypot["credentials"]["pass"],
 			'hpfeeds_server'     : hpfeeds["server"],
 			'hpfeeds_port'       : hpfeeds["port"],
 			'hpfeeds_identifier' : hpfeeds["identifier"],
 			'hpfeeds_secret'     : hpfeeds["secret"],
 			'logfile'            : self.json_file,
-			'socket_port'        : SOCKET_PORTS+ident
+			'socket_port'        : Cowrie.SOCKET_PORTS + honeypot["id"]
 		}
 
 		content = self.conf_template.substitute(params)

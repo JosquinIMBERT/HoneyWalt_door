@@ -24,6 +24,7 @@ class DoorController():
 			cert_reqs=ssl.CERT_REQUIRED,
 			ssl_version=ssl.PROTOCOL_TLS
 		)
+		DoorService = CustomizedDoorService(self.server)
 		self.threaded_server = ThreadedServer(DoorService, port=DOOR_PORT, authenticator=authenticator)
 		self.service_thread = threading.Thread(target=self.run)
 		self.service_thread.start()
@@ -37,49 +38,61 @@ class DoorController():
 
 
 
-class DoorService(AbstractService):
-	def __init__(self):
-		AbstractService.__init__(self)
+# This function customizes the ClientService class so that it takes the server as a parameter parameter
+def CustomizedDoorService(server):
+	class DoorService(AbstractService):
+		def __init__(self):
+			AbstractService.__init__(self)
 
-	def exposed_firewall_up(self):
-		return self.call(self.server.firewall.up, self.remote_ip)
+			self.server = server
 
-	def exposed_firewall_down(self):
-		return self.call(self.server.firewall.down)
+		def exposed_firewall_up(self):
+			return self.call(self.server.firewall.up, self.remote_ip)
 
-	def exposed_wg_keygen(self):
-		return self.call(self.server.wireguard.keygen)
+		def exposed_firewall_down(self):
+			return self.call(self.server.firewall.down)
 
-	def exposed_wg_up(self):
-		return self.call(self.server.wireguard.up)
+		def exposed_wg_keygen(self):
+			return self.call(self.server.wireguard.keygen)
 
-	def exposed_wg_down(self):
-		return self.call(self.server.wireguard.down)
+		def exposed_wg_up(self):
+			return self.call(self.server.wireguard.up)
 
-	def exposed_wg_reset(self):
-		return self.call(self.server.wireguard.reset_peers)
+		def exposed_wg_down(self):
+			return self.call(self.server.wireguard.down)
 
-	def exposed_wg_add_peer(self, pubkey, ident):
-		return self.call(self.server.wireguard.add_peer, pubkey, ident)
+		def exposed_wg_reset(self):
+			return self.call(self.server.wireguard.reset_peers)
 
-	def exposed_traffic_shaper_up(self):
-		self.server.shaper.set_peer(self.conn.root)
-		return self.call(self.server.shaper.start)
+		def exposed_wg_add_peer(self, pubkey):
+			return self.call(self.server.wireguard.add_peer, pubkey)
 
-	def exposed_traffic_shaper_down(self):
-		return self.call(self.server.shaper.stop)
+		def exposed_traffic_shaper_up(self):
+			self.server.shaper.set_peer(self.conn.root)
+			return self.call(self.server.shaper.start)
 
-	def exposed_forward(self, packet):
-		return self.call(self.server.shaper.forward, packet)
+		def exposed_traffic_shaper_down(self):
+			return self.call(self.server.shaper.stop)
 
-	def exposed_cowrie_configure(self):
-		return self.call(self.server.cowrie.configure) #TODO: add parameters
+		def exposed_forward(self, packet):
+			return self.call(self.server.shaper.forward, packet)
 
-	def exposed_cowrie_start(self):
-		return self.call(self.server.cowrie.start)
+		def exposed_cowrie_configure(self):
+			return self.call(self.server.cowrie.configure, self.server.config["honeypot"], self.server.config["hpfeeds"])
 
-	def exposed_cowrie_stop(self):
-		return self.call(self.server.cowrie.stop)
+		def exposed_cowrie_start(self):
+			return self.call(self.server.cowrie.start)
 
-	def exposed_cowrie_is_running(self):
-		return self.call(self.server.cowrie.is_running)
+		def exposed_cowrie_stop(self):
+			return self.call(self.server.cowrie.stop)
+
+		def exposed_cowrie_is_running(self):
+			return self.call(self.server.cowrie.is_running)
+
+		def exposed_set_config(self, config):
+			self.server.config = config
+
+		def exposed_commit(self):
+			return self.call(self.server.store_config)
+	
+	return DoorService

@@ -1,0 +1,22 @@
+{
+	"honeypot": {
+		"id": 0,
+		"door": {
+			"privkey": "null",
+			"pubkey": "null"
+		},
+		"device": {
+			"pubkey": "null"
+		},
+		"credentials": {
+			"user": "root",
+			"pass": "pass"
+		}
+	},
+	"hpfeeds": {
+		"server": "2.2.2.2",
+		"port": 2222,
+		"identifier": "null",
+		"secret": "null"
+	}
+}
