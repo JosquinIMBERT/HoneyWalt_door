@@ -67,11 +67,11 @@ def CustomizedDoorService(server):
 		def exposed_wg_set_peer(self, pubkey):
 			return self.call(self.server.wireguard.set_peer, pubkey)
 
-		def exposed_traffic_shaper_up(self):
+		def exposed_shaper_up(self):
 			self.server.shaper.set_peer(self.conn.root)
 			return self.call(self.server.shaper.start)
 
-		def exposed_traffic_shaper_down(self):
+		def exposed_shaper_down(self):
 			return self.call(self.server.shaper.stop)
 
 		def exposed_forward(self, packet):
