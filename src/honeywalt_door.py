@@ -53,7 +53,7 @@ class DoorServer:
 
 	def store_config(self):
 		with open(self.user_conf_file, "w") as configuration_file:
-			configuration_file.write(json.dumps(self.config))
+			configuration_file.write(json.dumps(self.config, indent=4))
 
 	def stop(self):
 		try:
