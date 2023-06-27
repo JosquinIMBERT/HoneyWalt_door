@@ -15,7 +15,7 @@ class Cowrie:
 	BACKEND_SSH_HOST = "127.0.0.1"
 	SOCKET_PORTS     = 4000
 
-	def __init__(self, server):		
+	def __init__(self, server):
 		self.server = server
 
 		self.run_dir       = to_root_path("run/cowrie/")
@@ -57,7 +57,7 @@ class Cowrie:
 		}
 
 		content = self.conf_template.substitute(params)
-		
+
 		with open(self.conf_file, "w") as configuration_file:
 			configuration_file.write(content)
 
