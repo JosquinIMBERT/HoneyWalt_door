@@ -22,7 +22,6 @@ class Wireguard:
 		
 		self.privkey = None
 		self.pubkey = None
-		self.server = None
 		self.peer = None
 		self.name = "wg-srv"
 
