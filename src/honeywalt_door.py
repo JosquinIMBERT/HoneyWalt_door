@@ -55,6 +55,9 @@ class DoorServer:
 		with open(self.user_conf_file, "w") as configuration_file:
 			configuration_file.write(json.dumps(self.config, indent=4))
 
+	def set_config(self, config):
+		self.config = json.loads(config)
+
 	def stop(self):
 		try:
 			log(INFO, "DoorServer.stop: stopping wireguard")

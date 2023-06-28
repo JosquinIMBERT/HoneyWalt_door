@@ -90,7 +90,7 @@ def CustomizedDoorService(server):
 			return self.call(self.server.cowrie.is_running)
 
 		def exposed_set_config(self, config):
-			self.server.config = json.loads(config)
+			return self.call(self.server.set_config, config)
 
 		def exposed_commit(self):
 			return self.call(self.server.store_config)
