@@ -10,6 +10,9 @@ from common.utils.logs import *
 from common.utils.rpc import AbstractService
 
 class DoorController():
+
+	DOOR_PORT = 5556
+
 	def __init__(self, server):
 		self.server = server
 
@@ -25,7 +28,7 @@ class DoorController():
 			ssl_version=ssl.PROTOCOL_TLS
 		)
 		DoorService = CustomizedDoorService(self.server)
-		self.threaded_server = ThreadedServer(DoorService, port=DOOR_PORT, authenticator=authenticator)
+		self.threaded_server = ThreadedServer(DoorService, port=DoorController.DOOR_PORT, authenticator=authenticator)
 		self.service_thread = threading.Thread(target=self.run)
 		self.service_thread.start()
 
