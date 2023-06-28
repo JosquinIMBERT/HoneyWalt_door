@@ -1,5 +1,5 @@
 # External
-import ssl, threading
+import json, ssl, threading
 from rpyc.utils.server import ThreadedServer
 from rpyc.utils.authenticators import SSLAuthenticator
 
@@ -90,7 +90,7 @@ def CustomizedDoorService(server):
 			return self.call(self.server.cowrie.is_running)
 
 		def exposed_set_config(self, config):
-			self.server.config = config
+			self.server.config = json.loads(config)
 
 		def exposed_commit(self):
 			return self.call(self.server.store_config)
