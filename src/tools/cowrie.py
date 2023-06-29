@@ -18,12 +18,14 @@ class Cowrie:
 	def __init__(self, server):
 		self.server = server
 
-		self.run_dir       = to_root_path("run/cowrie/")
-		self.pid_file      = to_root_path(self.run_dir+"/cowrie.pid")
-		self.log_file      = to_root_path(self.run_dir+"/cowrie.log")
-		self.json_file     = to_root_path(self.run_dir+"/cowrie.json")
-		self.conf_file     = to_root_path(self.run_dir+"/cowrie.conf")
-		self.download_path = to_root_path(self.run_dir+"/download/")
+		self.run_dir       = "/opt/cowrie/honeywalt/"
+		os.makedirs(self.run_dir, exist_ok=True)
+
+		self.pid_file      = self.run_dir+"/cowrie.pid"
+		self.log_file      = self.run_dir+"/cowrie.log"
+		self.json_file     = self.run_dir+"/cowrie.json"
+		self.conf_file     = self.run_dir+"/cowrie.conf"
+		self.download_path = self.run_dir+"/download/"
 
 		self.conf_template  = ""
 		self.start_template = ""
@@ -45,7 +47,7 @@ class Cowrie:
 			'download_path'      : self.download_path,
 			'listen_port'        : Cowrie.SSH_LISTEN_PORT,
 			'backend_host'       : Cowrie.BACKEND_SSH_HOST,
-			'backend_port'       : Cowrie.BACKEND_SSH_PORT + honeypot["id"],
+			'backend_port'       : Cowrie.BACKEND_SSH_PORT + int(honeypot["id"]),
 			'backend_user'       : honeypot["credentials"]["user"],
 			'backend_pass'       : honeypot["credentials"]["pass"],
 			'hpfeeds_server'     : hpfeeds["server"],
@@ -53,7 +55,7 @@ class Cowrie:
 			'hpfeeds_identifier' : hpfeeds["identifier"],
 			'hpfeeds_secret'     : hpfeeds["secret"],
 			'logfile'            : self.json_file,
-			'socket_port'        : Cowrie.SOCKET_PORTS + honeypot["id"]
+			'socket_port'        : Cowrie.SOCKET_PORTS + int(honeypot["id"])
 		}
 
 		content = self.conf_template.substitute(params)
@@ -64,10 +66,13 @@ class Cowrie:
 	# Prepare cowrie to run
 	def prepare(self):
 		# Delete previous pid file
-		delete(to_root_path("run/cowrie/"), suffix=".pid")
+		delete(self.run_dir, suffix=".pid")
+
+		# Create downloads directory
+		os.makedirs(self.download_path, exist_ok=True)
 
 		# Allow cowrie user to access cowrie files
-		run("chown -R cowrie:cowrie "+to_root_path("run/cowrie/"))
+		run("chown -R cowrie:cowrie "+self.run_dir)
 
 	def start(self):
 		if self.is_running():
@@ -87,12 +92,12 @@ class Cowrie:
 
 	def stop(self):
 		try:
-			kill_from_file(os.path.join(path, pidpath))
+			kill_from_file(self.pid_file)
 		except:
-			log(WARNING, "Cowrie.stop: failed - the pid file is: "+str(pidpath))
+			log(WARNING, "Cowrie.stop: failed - the pid file is: "+str(self.pid_file))
 			return False
 		else:
 			return True
 
 	def is_running(self):
-		return read_pid_file(to_root_path("run/cowrie/cowrie.pid")) is not None
+		return read_pid_file(self.pid_file) is not None
