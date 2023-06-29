@@ -10,7 +10,7 @@ from common.utils.misc import *
 
 class Cowrie:
 
-	SSH_LISTEN_PORT  = 22
+	SSH_LISTEN_PORT  = 2222 # Traffic from 22 is redirected to 2222 (cowrie can not listen on 22 - missing privileges)
 	BACKEND_SSH_PORT = 2000
 	BACKEND_SSH_HOST = "127.0.0.1"
 	SOCKET_PORTS     = 4000

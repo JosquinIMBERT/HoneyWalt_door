@@ -53,6 +53,7 @@ iptables -t mangle -P POSTROUTING ACCEPT
 ###    FIREWALL    ###
 ######################
 
+iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 22 -j REDIRECT --to-port 2222 # Cowrie traffic will be redirected to port 2222
 iptables -A INPUT -t filter -i lo -j ACCEPT # Accept local traffic
 iptables -A INPUT -t filter -p tcp -m state --state ESTABLISHED,RELATED -j ACCEPT # Accept established connections
 iptables -A INPUT -t filter -s ${controller_ip} -j ACCEPT # Accept controller traffic
