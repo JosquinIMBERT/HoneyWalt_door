@@ -39,17 +39,15 @@ class DoorServer:
 		self.user_conf_file = to_root_path("etc/honeywalt_door.cfg")
 		self.dist_conf_file = to_root_path("etc/honeywalt_door.cfg.dist")
 		self.config = {}
+		self.load_config()
 
 		signal.signal(signal.SIGINT, terminate)
 		signal.signal(signal.SIGTERM, terminate)
 
 	def load_config(self):
-		if isfile(self.user_conf_file):
-			with open(self.user_conf_file, "r") as configuration_file:
-				self.config = json.loads(configuration_file.read())
-		else:
-			with open(self.dist_conf_file, "r") as configuration_file:
-				self.config = json.loads(configuration_file.read())
+		configuration_filename = self.user_conf_file if isfile(self.user_conf_file) else self.dist_conf_file
+		with open(self.configuration_filename, "r") as configuration_file:
+			self.config = json.loads(configuration_file.read())
 
 	def store_config(self):
 		with open(self.user_conf_file, "w") as configuration_file:
