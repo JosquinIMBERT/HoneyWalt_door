@@ -67,7 +67,7 @@ class Cowrie:
 		delete(to_root_path("run/cowrie/"), suffix=".pid")
 
 		# Allow cowrie user to access cowrie files
-		run("chown -R cowrie "+to_root_path("run/cowrie/"))
+		run("chown -R cowrie:cowrie "+to_root_path("run/cowrie/"))
 
 	def start(self):
 		if self.is_running():
