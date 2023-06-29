@@ -104,19 +104,14 @@ class Wireguard:
 
 	# Generate wireguard keys
 	def keygen(self):
-		res = {}
-
 		self.privkey, self.pubkey = Key.key_pair()
 		self.privkey = str(self.privkey)
 		self.pubkey = str(self.pubkey)
 
-		res["privkey"] = self.privkey
-		res["pubkey"]  = self.pubkey
-
 		self.server.config["honeypot"]["door"]["privkey"] = self.privkey
 		self.server.config["honeypot"]["door"]["pubkey"] = self.pubkey
 
-		return res
+		return self.pubkey
 
 	def reset_peer(self):
 		self.peer = None
