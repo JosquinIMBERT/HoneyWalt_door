@@ -4,7 +4,6 @@ from rpyc.utils.server import ThreadedServer
 from rpyc.utils.authenticators import SSLAuthenticator
 
 # Internal
-from common.door.proto import *
 from common.utils.files import *
 from common.utils.logs import *
 from common.utils.rpc import AbstractService
