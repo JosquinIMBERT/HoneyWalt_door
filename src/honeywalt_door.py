@@ -46,7 +46,7 @@ class DoorServer:
 
 	def load_config(self):
 		configuration_filename = self.user_conf_file if isfile(self.user_conf_file) else self.dist_conf_file
-		with open(self.configuration_filename, "r") as configuration_file:
+		with open(configuration_filename, "r") as configuration_file:
 			self.config = json.loads(configuration_file.read())
 
 	def store_config(self):
