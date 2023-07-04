@@ -99,6 +99,7 @@ def main():
 	if options.log_level is not None:
 		log_level = options.log_level[0]
 		set_log_level(log_level)
+	log(INFO, "Using log level: "+str(get_log_level()))
 
 	# PID file
 	if options.pid_file is not None:
@@ -108,6 +109,7 @@ def main():
 		if path.parent.exists():
 			with open(pid_file_path, "w") as pid_file:
 				pid_file.write(str(os.getpid()))
+		log(INFO, "Using pid file: "+str(pid_file_path))
 
 	# IP White List (from arguments)
 	args_ips = []
@@ -123,6 +125,8 @@ def main():
 
 	# IP White List (final)
 	ip_white_list = args_ips + file_ips
+
+	log(INFO, "Using whitelist: "+str(ip_white_list))
 
 	server = DoorServer(ip_white_list=ip_white_list)
 	server.start()
