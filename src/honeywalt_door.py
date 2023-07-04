@@ -1,5 +1,5 @@
 # External
-import argparse, json, signal
+import argparse, json, os, signal
 
 # Internal
 from door.controller import DoorController
@@ -20,12 +20,12 @@ def terminate(signume, frame):
 
 class DoorServer:
 	"""DoorServer"""
-	def __init__(self):
+	def __init__(self, ip_white_list=[]):
 		log(INFO, "DoorServer: building the cowrie manager")
 		self.cowrie = Cowrie(self)
 
 		log(INFO, "DoorServer: building the firewall manager")
-		self.firewall = Firewall(self)
+		self.firewall = Firewall(self, ip_white_list=ip_white_list)
 
 		log(INFO, "DoorServer: building the door controller")
 		self.door = DoorController(self)
@@ -90,13 +90,41 @@ def main():
 
 	parser = argparse.ArgumentParser(description='HoneyWalt Door Daemon')
 	parser.add_argument("-l", "--log-level", nargs=1, help="Set log level (COMMAND, DEBUG, INFO, WARNING, ERROR, FATAL)")
+	parser.add_argument("-p", "--pid-file", nargs=1, help="Select a PID file")
+	parser.add_argument("-w", "--ip-white-list", nargs=1, help="Select IPs to accept SSH connections from")
 
 	options = parser.parse_args()
+
+	# Log Level
 	if options.log_level is not None:
 		log_level = options.log_level[0]
 		set_log_level(log_level)
 
-	server = DoorServer()
+	# PID file
+	if options.pid_file is not None:
+		pid_file_path = options.pid_file[0]
+		from pathlib import Path
+		path = Path(pid_file_path)
+		if path.parent.exists():
+			with open(pid_file_path, "w") as pid_file:
+				pid_file.write(os.getpid())
+
+	# IP White List (from arguments)
+	args_ips = []
+	if options.ip_white_list is not None:
+		args_ips = options.ip_white_list[0].split(",")
+
+	# IP White List (from file)
+	file_ips = []
+	white_list_filepath = to_root_path("etc/white_list.txt")
+	if isfile(white_list_filepath):
+		with open(white_list_filepath, "r") as white_list_file:
+			file_ips = white_list_file.read().split(",")
+
+	# IP White List (final)
+	ip_white_list = args_ips + file_ips
+
+	server = DoorServer(ip_white_list=ip_white_list)
 	server.start()
 
 if __name__ == '__main__':
