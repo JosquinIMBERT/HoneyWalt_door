@@ -107,7 +107,7 @@ def main():
 		path = Path(pid_file_path)
 		if path.parent.exists():
 			with open(pid_file_path, "w") as pid_file:
-				pid_file.write(os.getpid())
+				pid_file.write(str(os.getpid()))
 
 	# IP White List (from arguments)
 	args_ips = []
