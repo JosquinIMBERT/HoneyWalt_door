@@ -119,7 +119,7 @@ def main():
 	white_list_filepath = to_root_path("etc/whitelist.txt")
 	if isfile(white_list_filepath):
 		with open(white_list_filepath, "r") as white_list_file:
-			file_ips = white_list_file.read().strip().split(",")
+			file_ips = ",".join(white_list_file.read().split()).split(",")
 
 	# IP White List (final)
 	ip_white_list = args_ips + file_ips
